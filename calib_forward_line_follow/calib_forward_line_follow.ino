@@ -8,6 +8,7 @@ Line following robot
 #define motorrechtsPWM 5
 #define motorrechtsDir 4
 
+//PID control http://en.wikipedia.org/wiki/PID_controller
 #define Kp 1
 #define Kd 0
 #define Ki 0
@@ -39,7 +40,7 @@ int speed_corr;
 int right_speed;
 //play with speed interval !!!
 //depends on battery also !!
-int max_speed = 100;
+int max_speed = 140; //max 255!
 int min_speed = 0;
 int left_speed;
 
@@ -75,7 +76,7 @@ void loop(){
     // and if not search for the can.  
   }
   // Optional
-  delay(1);
+  //delay(1);
 }
 
 bool sensors_read(){
@@ -133,7 +134,7 @@ void pid_calc(){
 
 void calc_turn(){
   
-  //Restricting the error value between -254 and +254.
+  //Restricting the error value between -max_err, -min_err and min_err, max_err.
   if (abs(error_value) > max_err){
     // not possible, some error, don't correct
     error_value = 0;

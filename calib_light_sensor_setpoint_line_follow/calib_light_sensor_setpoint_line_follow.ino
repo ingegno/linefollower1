@@ -15,6 +15,15 @@ int baseline;
 long sensors_average_bl;
 int sensors_sum_bl;
 
+long proportional;
+long integral;
+long derivative;
+long last_proportional;
+int mid_point = 2000;
+int max_err = max(4000-mid_point, mid_point-0);
+int min_err = 500;
+long error_value;
+
 // Array used to store 5 readings for 5 sensors
 long sensors[] = {0, 0, 0, 0, 0};
 
@@ -28,6 +37,7 @@ void loop(){
   sensors_sum = 0;
   sensors_average_bl = 0;
   sensors_sum_bl = 0;
+  last_proportional = 0;
   baseline = 1024;
   Serial.println("Place me on color and note what values I measure between 0 and 1023!");
   for (int i = 0; i < 5; i++){
@@ -54,6 +64,18 @@ void loop(){
   Serial.print("baseline sensor pos line:");
   Serial.println(int(sensors_average_bl / sensors_sum_bl)/1000.);
   Serial.println("If line was centered, then pos line is your calibration mid_point!");
+  delay(1000);
+  Serial.println("The error under Kp, Ki, Kd");
+  proportional = int(pos*1000) - mid_point;
+  integral = integral + proportional;
+  derivative = proportional - last_proportional;
+  last_proportional = proportional;
+  error_value = int(proportional * Kp + integral * Ki + derivative * Kd);
+  Serial.print("Error = "); Serial.println(error_value);
+  Serial.print("abs(error) should be between ");
+  Serial.print(min_err);Serial.print(" and ");
+  Serial.print(max_err);Serial.println(" for good correction");
+  Serial.println(" ");
   delay(5000);
 }
 

@@ -1,0 +1,85 @@
+\section{\engt{Introduction} \nedt{Introductie}}
+\eng{TODO
+}
+
+\ned{We maken een lijnvolg robot. Dit is een ingewikkeld project, met veel programmatie
+}
+
+\subsection{\engt{The components} \nedt{De componenten}}
+\eng{We will need the following components: 
+\begin{enumerate}
+ \item TODO
+\end{enumerate}
+You will also need a soldering iron, and optionally you can make a cover for the cube, eg using 3D printing.
+
+For an overview of meaning of the components, see the cheat sheet distributed seperately.
+}
+
+\ned{We zullen volgende componenten gebruiken: 
+\begin{enumerate}
+ \item TODO
+\end{enumerate}
+Je zal ook een soldeerijzer nodig hebben.
+
+Voor een overzicht van de betekenis van de componenten, zie het overzicht die je apart gekregen hebt.
+}
+
+\subsection{Arduino}
+\eng{We will make intensive use of Arduino, so you need to install the \href{http://Arduino.cc}{Arduino software}. Once installed, you can connect the Arduino to your PC via de \textsc{usb} port.  In the programming environment you installed you can write programs, and load those on the Arduino board. They will be executed there as long as the Arduino has power.
+
+}
+\ned{We zullen intensief gebruik maken van Arduino, dus moet je de \href{http://Arduino.cc}{Arduino software} installeren op je laptop.
+Eenmaal geinstalleerd kun je nu je Arduino koppelen aan je computer via de \textsc{usb} poort. In de programmeeromgeving van Arduino kun je programma's schrijven en die opladen naar de Arduino, waar ze dan uitgevoerd worden zolang er stroom is.
+}
+
+
+\subsection{\engt{Programming with Arduino} \nedt{Programmeren met Arduino}}
+\eng{A programming language needs to be understood by a computer. Unfortunately computers are still a little bit dumb, so you are not allowed to make errors! It's like a writing contest in which you need to obtain a 10/10 every time. So take time to learn the form of the language. See the specific sheet 'Programming with Arduino' distributed with this manual.}
+
+
+\ned{Een programmeertaal moet verstaan worden door een computer. Spijtig genoeg zijn computers nog altijd een beetje dom, dus mag je geen enkele fout maken! Het is zoals een dictee waar je altijd 10/10 moet halen. Neem dus de tijd om de structuur en taal van de Arduino te leren. Zie de blaadjes 'Programmeren met Arduino' die je bij deze gids kan downloaden.}
+
+\section{\engt{Lesson 1: Drive!} \nedt{Les 1: Rijden maar}}
+\eng{TODO}.
+\ned{We beginnen met de motoren monteren en uittesten. }
+
+\begin{code}\label{c:l1_motor}
+ \ \newline
+\inputardfull{\string"../sketches/calib_motors_forward/calib_motors_forward.ino\string"}
+\end{code}
+
+\section{\engt{Lesson 2: Light sensor setup} \nedt{Les 2: een lichtsensor gebruiken}}
+\eng{TODO}.
+\ned{De tweede stap is het monteren van de lichtsensor. De lichtsensor kan kleuren detecteren onder de sensor.}
+
+
+\begin{code}\label{c:l2_c}
+ \ \newline
+\inputardfull{\string"../sketches/calib_light_sensor_setpoint_line_follow/calib_light_sensor_setpoint_line_follow.ino\string"}
+\end{code}
+
+
+\section{\engt{Lesson 3: Follow a line} \nedt{Les 3: Een lijn volgen}}
+\eng{TODO}.
+\ned{Met motoren en de lichtsensor kunnen we een lijn volgen
+}
+
+\subsection{\engt{Basic version: move to midline} \nedt{Basisversie: beweeg naar een middellijn}}
+
+\eng{TODO}
+\ned{Ons basisalgoritme werkt op basis van volgend princiepe: 
+\begin{enumerate}
+ \item We lezen de lichtsensor in. We bepalen het middelpunt zoals in les 2: gewogen gemiddelde van de 5 sensoren. Gezien deze van 0 tot en met 4 lopen, zou het midden 2 moeten zijn. 
+ \item De fout is het verschil van het gemeten middelpunt en het gewenste middelpunt, maal 1000. We willen deze fout zo klein mogelijk houden.
+ \item Op basis van de fout passen we de snelheid van de motoren aan in de functie \ardo{calc\_turn}. De snelheid van de motoren is een getal tussen \ardo{min\_speed} en \ardo{max\_speed}, waarbij de eerste de waarde van PWM is die overeenkomt met stilstand (typisch 0), en \ardo{max\_speed} de maximum snelheid die je wil (typisch 180 tot 254). We corrigeren de snelheid van de linker of rechtermotor dus met
+$$\frac{\mathrm{fout}}{\mathrm{max\_fout}} \times ( \mathrm{max\_speed} - \mathrm{min\_speed} ).
+$$
+ \item De correctie wordt verminderd van de snelheid van het wiel dat rotatie in de correcte richting veroorzaakt.
+\end{enumerate}
+}
+
+\begin{code}\label{c:l2_c}
+ \ \newline
+\inputardfull{\string"../sketches/calib_forward_line_follow/calib_forward_line_follow.ino\string"}
+\end{code}
+

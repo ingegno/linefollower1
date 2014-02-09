@@ -16,3 +16,12 @@
 *.exe
 *.out
 *.app
+
+# latex
+*.aux
+*.log
+*.pdf
+
+# kde and kile
+*.backup
+.directory

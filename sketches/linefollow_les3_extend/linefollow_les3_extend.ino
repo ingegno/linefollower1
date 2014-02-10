@@ -13,7 +13,6 @@ bool test=false;
 //geen PID control http://en.wikipedia.org/wiki/PID_controller
 // enkel proportioneel de afwijking van middellijn in rekening brengen
 
-
 #define SCHAAL_FOUT 1000
 
 int black[2]  = {600,1000}; // hiertussen zouden de waarden voor zwart moeten zijn
@@ -21,7 +20,16 @@ int black[2]  = {600,1000}; // hiertussen zouden de waarden voor zwart moeten zi
 //waarschijnlijk niet ....
 int green[2]  = { 75, 100};
 int yellow[2] = { 80, 105};
-int white[2]  = { 40, 150};
+int white[2]  = { 0, 500};
+
+// Wat kunnen we zien met 5 sensoren van lijnsensor?
+#define LS_UNKNOWN    0 // we kunnen niet bepalen wat we zien
+#define LS_BLACKLINE  1 // een zwarte lijn
+#define LS_BLACKFIELD 2 // een zwart veld
+#define LS_WHITEFIELD 3 // een wit veld
+#define LS_BLACKLEFT  4 // zwart afbuigend naar rechts
+#define LS_BLACKRIGHT 5 // zwart afbuigend naar links
+#define LS_BLACKSPLIT 6 // zwart links en rechts, niet midden
 
 //wijzigende variabelen
 float sensors_average;
@@ -61,24 +69,53 @@ void setup(){
 
 void loop(){ 
   //Reads sensor values and computes sensor sum and weighted average
-  boolean lineseen = sensors_read();
-  if (lineseen){
-    calc_turn();
-    //Computes the error to be corrected
-    motor_drive(right_speed, left_speed); //Sends PWM signals to the motors
-  } else {
-    if (test) {
-      Serial.println("No line seen !!!");
-    }
-    motor_drive(0, 0);
-    // Here we should do a test if we did not miss the line, 
-    // and if not search for the can.  
+  int lineseen = sensors_read();
+  switch (lineseen) {
+    case LS_BLACKLINE:
+      calc_turn();
+      //Computes the error to be corrected
+      motor_drive(right_speed, left_speed); //Sends PWM signals to the motors
+      break;
+    case LS_UNKNOWN:
+      //can't decide what we have seen. stop and read again
+      motor_drive(0, 0);
+      if (test) {
+        Serial.println("No line seen !!!");
+      }
+      break;
+    case LS_WHITEFIELD:
+      //a white field. here we should stop, go backward a bit, verify, go forward, search for can
+      motor_drive(0, 0);
+      break;
+    case LS_BLACKFIELD:
+      //a black field. here we should stop. wait a sec, try again, if still problem, go backward a bit, try again?
+      motor_drive(0, 0);
+      break;
+    case LS_BLACKLEFT:
+      // we assume a sharp turn to left
+      motor_drive(0, 0);
+      delay(500);
+      // turn a bit to correct
+      motor_drive(150, -10);
+      delay(300);
+      break;
+    case LS_BLACKRIGHT:
+      // we assume a sharp turn to right
+      motor_drive(0, 0);
+      delay(500);
+      // turn a bit to correct
+      motor_drive(-10, 150);
+      delay(300);
+      break;
+    default:
+      motor_drive(0,0);
+      break;
   }
 }
 
 boolean sensors_read(){
   /*
-  Method to read the sensors. Return true if a line is seen, and does
+  Method to read the sensors. Return type of black seen, and does
   necessary computations to know where the line is.
   */
   int sensors_sum = 0;
@@ -111,12 +148,26 @@ boolean sensors_read(){
   //de foutwaarde
   error_value = long((sensors_average_bl - mid_point) * SCHAAL_FOUT);
 
-  if (topline-baseline < ACCURACY){
-    // no line seen
-    return false;
-  } else {
-    return true;
+
+  if (baseline > black[0]){
+    return LS_BLACKFIELD;
+  } else if (topline < white[1]){
+    return LS_WHITEFIELD;
   }
+  if (topline-baseline < ACCURACY){
+    // no line seen but not black or white field
+    return LS_UNKNOWN;
+  }
+  if (sensors[2] < white[1] && sensors[0] > black[0] && sensors[4] > black[0]) {
+    return LS_BLACKSPLIT;
+  }
+  if (sensors[0] < white[1] && sensors[3] > black[0] && sensors[4] > black[0]) {
+    return LS_BLACKLEFT;
+  }
+  if (sensors[4] < white[1] && sensors[1] > black[0] && sensors[0] > black[0]) {
+    return LS_BLACKRIGHT;
+  }
+  return LS_BLACKLINE;
 }
 
 
@@ -140,21 +191,21 @@ void calc_turn(){
     Serial.print(" Speed corr: "); Serial.print(speed_corr);Serial.print(" ");
   }
   if (speed_corr < -1000) {
-    //line at sensor 0 move slowly towards 2 (to left), by reducing speed left
+    //line at sensor 0 move line slowly towards 2 (to left), by a right turn, so reducing speed right
     right_speed = 0; 
     left_speed = MAX_SPEED/2;
     
   } else if (speed_corr < 0){
-    //line at sensor 0 to 2, move towards 2 (to left), by reducing speed left
+    //line at sensor 0 to 2, move line towards 2 (to left), by reducing speed right
     right_speed = MAX_SPEED + speed_corr;
-    left_speed = MAX_SPEED;// + speed_corr;
+    left_speed = MAX_SPEED;
   } else if (speed_corr > 1000) {
-    //line at sensor 4 move slowly towards 3 (to right) by reducing speed left
+    //line at sensor 4 move line slowly towards 3 (to right), by a left turn, so reducing speed left
     right_speed = MAX_SPEED/2;
     left_speed = 0;
   } else {
-    //line at sensor 2 to 4, move towards 2, by reducing speed right
-    right_speed = MAX_SPEED; // - speed_corr;
+    //line at sensor 2 to 4, move line towards 2, by reducing speed left
+    right_speed = MAX_SPEED;
     left_speed = MAX_SPEED - speed_corr;
   }
 }
@@ -167,9 +218,19 @@ void motor_drive(int right_speed, int left_speed){
   }
   // Drive motors according to the calculated values
   // Normally 255 - speed as we have Dir LOW, but h
-  digitalWrite(motorlinksDir, HIGH); //vooruit
-  digitalWrite(motorrechtsDir, HIGH); //vooruit
-  analogWrite(motorrechtsPWM, 255-right_speed);
-  analogWrite(motorlinksPWM, 255-left_speed);
+  if (right_speed>=0){
+    digitalWrite(motorrechtsDir, HIGH); //vooruit
+    analogWrite(motorrechtsPWM, 255-right_speed);
+  } else {
+    digitalWrite(motorrechtsDir, LOW); //vooruit
+    analogWrite(motorrechtsPWM, -right_speed);
+  }
+  if (left_speed>=0){
+    digitalWrite(motorlinksDir, HIGH); //vooruit
+    analogWrite(motorlinksPWM, 255-left_speed);
+  } else {
+    digitalWrite(motorlinkssDir, LOW); //vooruit
+    analogWrite(motorlinksPWM, -right_speed);
+  }
 }
 

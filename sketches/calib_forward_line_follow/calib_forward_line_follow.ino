@@ -140,21 +140,21 @@ void calc_turn(){
     Serial.print(" Speed corr: "); Serial.print(speed_corr);Serial.print(" ");
   }
   if (speed_corr < -1000) {
-    //line at sensor 0 move slowly towards 2 (to left), by reducing speed left
+    //line at sensor 0 move line slowly towards 2 (to left), by a right turn, so reducing speed right
     right_speed = 0; 
     left_speed = MAX_SPEED/2;
     
   } else if (speed_corr < 0){
-    //line at sensor 0 to 2, move towards 2 (to left), by reducing speed left
+    //line at sensor 0 to 2, move line towards 2 (to left), by reducing speed right
     right_speed = MAX_SPEED + speed_corr;
-    left_speed = MAX_SPEED;// + speed_corr;
+    left_speed = MAX_SPEED;
   } else if (speed_corr > 1000) {
-    //line at sensor 4 move slowly towards 3 (to right) by reducing speed left
+    //line at sensor 4 move line slowly towards 3 (to right), by a left turn, so reducing speed left
     right_speed = MAX_SPEED/2;
     left_speed = 0;
   } else {
-    //line at sensor 2 to 4, move towards 2, by reducing speed right
-    right_speed = MAX_SPEED; // - speed_corr;
+    //line at sensor 2 to 4, move line towards 2, by reducing speed left
+    right_speed = MAX_SPEED;
     left_speed = MAX_SPEED - speed_corr;
   }
 }

@@ -229,7 +229,7 @@ void motor_drive(int right_speed, int left_speed){
     digitalWrite(motorlinksDir, HIGH); //vooruit
     analogWrite(motorlinksPWM, 255-left_speed);
   } else {
-    digitalWrite(motorlinkssDir, LOW); //vooruit
+    digitalWrite(motorlinksDir, LOW); //vooruit
     analogWrite(motorlinksPWM, -right_speed);
   }
 }

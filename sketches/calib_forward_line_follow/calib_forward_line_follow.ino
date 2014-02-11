@@ -23,6 +23,9 @@ int green[2]  = { 75, 100};
 int yellow[2] = { 80, 105};
 int white[2]  = { 40, 150};
 
+int corrwhite[5] = {0, 0, 0, 10, 30};
+int corrblack[5] = {0, 50, 0, 20, 50};
+
 //wijzigende variabelen
 float sensors_average;
 float sensors_average_bl; // hier houden we rekening met een baseline, dat is we trekken het minimun ervan af
@@ -89,6 +92,8 @@ boolean sensors_read(){
   sensors_average_bl = 0;
   for (int i = 0; i < 5; i++){
     sensors[i] = analogRead(i);
+    if (sensors[i] < 501){ sensors[i] = sensors[i]-corrwhite[i];}
+    else { sensors[i] = sensors[i]-corrblack[i];}
     if (baseline > sensors[i]){
       baseline = sensors[i];
     }

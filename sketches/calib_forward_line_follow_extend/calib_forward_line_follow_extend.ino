@@ -15,12 +15,15 @@ bool test=false;
 
 #define SCHAAL_FOUT 1000
 
-int black[2]  = {600,1000}; // hiertussen zouden de waarden voor zwart moeten zijn
+int black[2]  = {700,1000}; // hiertussen zouden de waarden voor zwart moeten zijn
 //test of je groen, geel, wit kan zien
 //waarschijnlijk niet ....
 int green[2]  = { 75, 100};
 int yellow[2] = { 80, 105};
 int white[2]  = { 0, 500};
+
+int corrwhite[5] = {0, 0, 0, 100, 200};
+int corrblack[5] = {0, 50, 0, 120, 50};
 
 // Wat kunnen we zien met 5 sensoren van lijnsensor?
 #define LS_UNKNOWN    0 // we kunnen niet bepalen wat we zien
@@ -96,7 +99,7 @@ void loop(){
       motor_drive(0, 0);
       delay(500);
       // turn a bit to correct
-      motor_drive(150, -10);
+      motor_drive(180, -100);
       delay(300);
       break;
     case LS_BLACKRIGHT:
@@ -104,7 +107,7 @@ void loop(){
       motor_drive(0, 0);
       delay(500);
       // turn a bit to correct
-      motor_drive(-10, 150);
+      motor_drive(-100, 180);
       delay(300);
       break;
     default:
@@ -126,6 +129,8 @@ boolean sensors_read(){
   sensors_average_bl = 0;
   for (int i = 0; i < 5; i++){
     sensors[i] = analogRead(i);
+    if (sensors[i] < 501){ sensors[i] = sensors[i]-corrwhite[i];}
+    else { sensors[i] = sensors[i]-corrblack[i];}
     if (baseline > sensors[i]){
       baseline = sensors[i];
     }
@@ -148,26 +153,35 @@ boolean sensors_read(){
   //de foutwaarde
   error_value = long((sensors_average_bl - mid_point) * SCHAAL_FOUT);
 
-
+  int seen = LS_UNKNOWN;
   if (baseline > black[0]){
-    return LS_BLACKFIELD;
+    seen = LS_BLACKFIELD;
   } else if (topline < white[1]){
-    return LS_WHITEFIELD;
-  }
-  if (topline-baseline < ACCURACY){
+    seen = LS_WHITEFIELD;
+  } else if (topline-baseline < ACCURACY){
     // no line seen but not black or white field
-    return LS_UNKNOWN;
+    seen = LS_UNKNOWN;
+  } else if (sensors[2] < white[1] && sensors[0] > black[0] && sensors[4] > black[0]) {
+    seen = LS_BLACKSPLIT;
+  } else if (sensors[0] < white[1] && sensors[3] > black[0] && sensors[4] > black[0]) {
+    seen = LS_BLACKLEFT;
+  } else if (sensors[4] < white[1] && sensors[1] > black[0] && sensors[0] > black[0]) {
+    seen = LS_BLACKRIGHT;
+  } else {
+    seen = LS_BLACKLINE;
   }
-  if (sensors[2] < white[1] && sensors[0] > black[0] && sensors[4] > black[0]) {
-    return LS_BLACKSPLIT;
+  if (test) {
+    motor_drive(0,0);
+    Serial.print("prev speed: "); Serial.print(right_speed); Serial.print(" "); Serial.println(left_speed);
+    Serial.print("I see:"); Serial.println(seen);
+    Serial.print("Corrected measured: "); 
+    for (int i = 0; i<5; i++){
+      Serial.print(sensors[i]);Serial.print(" ");
+    }
+    Serial.println(" ");
+    delay(2000);
   }
-  if (sensors[0] < white[1] && sensors[3] > black[0] && sensors[4] > black[0]) {
-    return LS_BLACKLEFT;
-  }
-  if (sensors[4] < white[1] && sensors[1] > black[0] && sensors[0] > black[0]) {
-    return LS_BLACKRIGHT;
-  }
-  return LS_BLACKLINE;
+  return seen;
 }
 
 
@@ -187,9 +201,6 @@ void calc_turn(){
   }
   //convert to correct number
   speed_corr = float(error_value)/float(max_err) * (MAX_SPEED-MIN_SPEED);
-  if (test){
-    Serial.print(" Speed corr: "); Serial.print(speed_corr);Serial.print(" ");
-  }
   if (speed_corr < -1000) {
     //line at sensor 0 move line slowly towards 2 (to left), by a right turn, so reducing speed right
     right_speed = 0; 
@@ -211,11 +222,6 @@ void calc_turn(){
 }
 
 void motor_drive(int right_speed, int left_speed){
-  if (test){
-    Serial.print("driving right and left: ");
-    Serial.print(right_speed);Serial.print(" ");
-    Serial.println(left_speed);
-  }
   // Drive motors according to the calculated values
   // Normally 255 - speed as we have Dir LOW, but h
   if (right_speed>=0){

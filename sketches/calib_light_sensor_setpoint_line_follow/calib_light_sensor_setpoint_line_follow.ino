@@ -4,12 +4,15 @@
 
 #define SCHAAL_FOUT 1000
 
-int black[2]  = {600,1000}; // hiertussen zouden de waarden voor zwart moeten zijn
+int black[2]  = {501,1000}; // hiertussen zouden de waarden voor zwart moeten zijn
 //test of je groen, geel, wit kan zien
 //waarschijnlijk niet ....
 int green[2]  = { 75, 100};
 int yellow[2] = { 80, 105};
-int white[2]  = { 40, 150};
+int white[2]  = {  0, 500};
+
+int corrwhite[5] = {0, 0, 0, 10, 30};
+int corrblack[5] = {0, 50, 0, 20, 50};
 
 //wijzigende variabelen
 float sensors_average;
@@ -40,6 +43,8 @@ void loop(){
   Serial.println("Plaats me op een kleur en noteer welke waarden ik meet tussen 0 en 1023!");
   for (int i = 0; i < 5; i++){
     sensors[i] = analogRead(i);
+    if (sensors[i] < 501){ sensors[i] = sensors[i]-corrwhite[i];}
+    else { sensors[i] = sensors[i]-corrblack[i];}
     if (baseline > sensors[i]){
       baseline = sensors[i];
     }

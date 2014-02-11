@@ -42,10 +42,10 @@ order=-1
 
 [item:lijnvolg1.tex]
 archive=true
-column=111
+column=11
 encoding=UTF-8
 highlight=LaTeX
-line=52
+line=133
 mode=LaTeX
 open=true
 order=1
@@ -61,10 +61,10 @@ open=true
 order=0
 
 [view-settings,view=0,item:lijnvolg1.tex]
-CursorColumn=111
-CursorLine=52
+CursorColumn=11
+CursorLine=133
 JumpList=
-ViMarks=.,74,63,[,74,63,],74,63
+ViMarks=.,80,22,[,80,22,],80,22
 
 [view-settings,view=0,item:manual.tex]
 CursorColumn=0

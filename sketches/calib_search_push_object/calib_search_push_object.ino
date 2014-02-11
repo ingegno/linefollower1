@@ -92,67 +92,6 @@ void setup(){
 }
 
 
-void loop(){ 
-  //Reads sensor values and computes sensor sum and weighted average
-  int lineseen = sensors_read();
-  switch (lineseen) {
-    case LS_BLACKLINE:
-      finished = false;
-      onsearchfield = false;
-      motor_drive(0, 0);
-      if (test) {
-        Serial.println("black line !!!");
-      }
-      break;
-    case LS_UNKNOWN:
-      //can't decide what we have seen. stop and read again
-      motor_drive(0, 0);
-      if (test) {
-        Serial.println("No line seen !!!");
-      }
-      break;
-    case LS_WHITEFIELD:
-      //a white field. here we should stop, go backward a bit, verify, go forward, search for can
-      if (!finished && !onsearchfield){
-        motor_drive(-160,-160);
-        delay(500);
-        motor_drive(0,0);
-        lineseen = sensors_read();
-        if (lineseen == LS_BLACKLINE){
-          // good, move forward again
-          onsearchfield = true;
-          motor_drive(160,160);
-          delay(500);
-        }
-      }
-      if (!finished && onsearchfield){
-        motor_drive(0,0);
-        search_object();
-        move_to_object();
-        push_object();
-      } // else: make him follow line again next loop
-      break;
-    case LS_BLACKFIELD:
-      //a black field. here we should stop. wait a sec, try again, if still problem, go backward a bit, try again?
-      motor_drive(0, 0);
-      break;
-    case LS_BLACKLEFT:
-      // we assume a sharp turn to left
-      motor_drive(0, 0);
-      break;
-    case LS_BLACKRIGHT:
-      // we assume a sharp turn to right
-      motor_drive(0, 0);
-      break;
-    default:
-      motor_drive(0,0);
-      break;
-  }
-  if (finished){
-    motor_drive(0,0);
-  }
-}
-
 boolean sensors_read(){
   /*
   Method to read the sensors. Return type of black seen, and does
@@ -221,6 +160,68 @@ boolean sensors_read(){
   return seen;
 }
 
+void loop(){ 
+  //Reads sensor values and computes sensor sum and weighted average
+  int lineseen = sensors_read();
+  switch (lineseen) {
+    case LS_BLACKLINE:
+      finished = false;
+      onsearchfield = false;
+      motor_drive(0, 0);
+      if (test) {
+        Serial.println("black line !!!");
+      }
+      break;
+    case LS_UNKNOWN:
+      //can't decide what we have seen. stop and read again
+      motor_drive(0, 0);
+      if (test) {
+        Serial.println("No line seen !!!");
+      }
+      break;
+    case LS_WHITEFIELD:
+      //a white field. here we should stop, go backward a bit, verify, go forward, search for can
+      if (!finished && !onsearchfield){
+        motor_drive(-160,-160);
+        delay(500);
+        motor_drive(0,0);
+        lineseen = sensors_read();
+        if (lineseen == LS_BLACKLINE){
+          // good, move forward again
+          onsearchfield = true;
+          motor_drive(160,160);
+          delay(500);
+        }
+      }
+      if (!finished && onsearchfield){
+        motor_drive(0,0);
+        search_object();
+        move_to_object();
+        push_object();
+      } // else: make him follow line again next loop
+      break;
+    case LS_BLACKFIELD:
+      //a black field. here we should stop. wait a sec, try again, if still problem, go backward a bit, try again?
+      motor_drive(0, 0);
+      break;
+    case LS_BLACKLEFT:
+      // we assume a sharp turn to left
+      motor_drive(0, 0);
+      break;
+    case LS_BLACKRIGHT:
+      // we assume a sharp turn to right
+      motor_drive(0, 0);
+      break;
+    default:
+      motor_drive(0,0);
+      break;
+  }
+  if (finished){
+    motor_drive(0,0);
+  }
+}
+
+
 void search_object(){
   //we look for the object. First rotate left 180 degrees
   motor_drive(0,0);
@@ -240,7 +241,7 @@ void search_object(){
   }
 }
 
-int measure_distance(int &distance){
+int measure_distance(float &distance){
   //determine how far an obstacle is
   // bepalen van afstand tot het blikje
   int duration;
@@ -255,7 +256,7 @@ int measure_distance(int &distance){
   if (distance <= 0 || distance >= max_zichtbare_afstand){
     distance = max_zichtbare_afstand;
     return NO_OBJECT;
-  } else if (distance > max_zichtbare_afstand/) {
+  } else if (distance > max_zichtbare_afstand/2.) {
     return OBJECT_FAR;
   } else if (distance > stop_afstand) {
     return OBJECT_NEAR;
@@ -279,7 +280,7 @@ void move_to_object(){
         break;
       case OBJECT_FAR:
       case OBJECT_NEAR:
-        speedval = snelheid_max * max(SLOW_SPEED, (distance_object)/(max_zichtbare_afstand));
+        speedval = MAX_SPEED * max(SLOW_SPEED, (distance_object)/(max_zichtbare_afstand));
         motor_drive(speedval, speedval);
         delay(1500);
         motor_drive(0, 0);
@@ -290,7 +291,7 @@ void move_to_object(){
     }
     // test if still WHITEFIELD !
     int nrwhite = 0;
-    int lineseen
+    int lineseen;
     for (int ind=0; ind<5; ind++) {
       lineseen = sensors_read();
       if (lineseen == LS_WHITEFIELD) {nrwhite++;}
@@ -307,7 +308,7 @@ void move_to_object(){
 
 void push_object(){
   // we now are or in front of object, or on edge search field. In first case, push it out.
-  pos_obj = measure_distance(distance_object);
+  int pos_obj = measure_distance(distance_object);
   if (pos_obj == OBJECT_COLLIDE) {
     //we drive forward slowly for 7 sec?
     motor_drive(SLOW_SPEED, SLOW_SPEED);

@@ -1,5 +1,5 @@
 /************************************************************/
-/*          lijn volgen basisversie                         */
+/*          lijn volgen: uitgebreide versie                 */
 /************************************************************/
 
 // typ hier de aansluitingen van de motordriver, voor de twee motors

@@ -23,8 +23,8 @@ int green[2]  = { 75, 100};
 int yellow[2] = { 80, 105};
 int white[2]  = { 40, 150};
 
-int corrwhite[5] = {0, 0, 0, 10, 30};
-int corrblack[5] = {0, 50, 0, 20, 50};
+int corrwhite[5] = {0, 0, 0, 100, 200};
+int corrblack[5] = {0, 50, 0, 120, 50};
 
 //wijzigende variabelen
 float sensors_average;
@@ -144,16 +144,16 @@ void calc_turn(){
   if (test){
     Serial.print(" Speed corr: "); Serial.print(speed_corr);Serial.print(" ");
   }
-  if (speed_corr < -1000) {
+  if (error_value < -1000) {
     //line at sensor 0 move line slowly towards 2 (to left), by a right turn, so reducing speed right
     right_speed = 0; 
     left_speed = MAX_SPEED/2;
     
-  } else if (speed_corr < 0){
+  } else if (error_value < 0){
     //line at sensor 0 to 2, move line towards 2 (to left), by reducing speed right
     right_speed = MAX_SPEED + speed_corr;
     left_speed = MAX_SPEED;
-  } else if (speed_corr > 1000) {
+  } else if (error_value > 1000) {
     //line at sensor 4 move line slowly towards 3 (to right), by a left turn, so reducing speed left
     right_speed = MAX_SPEED/2;
     left_speed = 0;

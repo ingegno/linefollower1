@@ -362,15 +362,15 @@ void motor_drive(int right_speed, int left_speed){
     digitalWrite(motorrechtsDir, HIGH); //vooruit
     analogWrite(motorrechtsPWM, 255-right_speed);
   } else {
-    digitalWrite(motorrechtsDir, LOW); //vooruit
+    digitalWrite(motorrechtsDir, LOW); //achteruit
     analogWrite(motorrechtsPWM, -right_speed);
   }
   if (left_speed>=0){
     digitalWrite(motorlinksDir, HIGH); //vooruit
     analogWrite(motorlinksPWM, 255-left_speed);
   } else {
-    digitalWrite(motorlinksDir, LOW); //vooruit
-    analogWrite(motorlinksPWM, -right_speed);
+    digitalWrite(motorlinksDir, LOW); //achteruit
+    analogWrite(motorlinksPWM, -left_speed);
   }
 }
 

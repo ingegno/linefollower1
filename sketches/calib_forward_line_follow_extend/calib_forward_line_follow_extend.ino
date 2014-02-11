@@ -52,7 +52,7 @@ long sensors[] = {0, 0, 0, 0, 0};
 #define ACCURACY 100
 //play with speed interval !!!
 //depends on battery also !!
-#define MAX_SPEED  180 //max 255!
+#define MAX_SPEED  200 //max 255!
 #define MIN_SPEED  0
 
 int speed_corr;
@@ -96,18 +96,18 @@ void loop(){
       break;
     case LS_BLACKLEFT:
       // we assume a sharp turn to left
-      motor_drive(0, 0);
-      delay(500);
+      //motor_drive(0, 0);
+      //delay(500);
       // turn a bit to correct
-      motor_drive(180, -100);
+      motor_drive(180, -140);
       delay(300);
       break;
     case LS_BLACKRIGHT:
       // we assume a sharp turn to right
-      motor_drive(0, 0);
-      delay(500);
+      //motor_drive(0, 0);
+      //delay(500);
       // turn a bit to correct
-      motor_drive(-100, 180);
+      motor_drive(-140, 180);
       delay(300);
       break;
     default:
@@ -228,15 +228,15 @@ void motor_drive(int right_speed, int left_speed){
     digitalWrite(motorrechtsDir, HIGH); //vooruit
     analogWrite(motorrechtsPWM, 255-right_speed);
   } else {
-    digitalWrite(motorrechtsDir, LOW); //vooruit
+    digitalWrite(motorrechtsDir, LOW); //achteruituit
     analogWrite(motorrechtsPWM, -right_speed);
   }
   if (left_speed>=0){
     digitalWrite(motorlinksDir, HIGH); //vooruit
     analogWrite(motorlinksPWM, 255-left_speed);
   } else {
-    digitalWrite(motorlinksDir, LOW); //vooruit
-    analogWrite(motorlinksPWM, -right_speed);
+    digitalWrite(motorlinksDir, LOW); //achteruit
+    analogWrite(motorlinksPWM, -left_speed);
   }
 }
 

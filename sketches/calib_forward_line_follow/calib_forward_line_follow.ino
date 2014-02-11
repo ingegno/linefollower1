@@ -165,16 +165,21 @@ void calc_turn(){
 }
 
 void motor_drive(int right_speed, int left_speed){
-  if (test){
-    Serial.print("driving right and left: ");
-    Serial.print(right_speed);Serial.print(" ");
-    Serial.println(left_speed);
-  }
   // Drive motors according to the calculated values
   // Normally 255 - speed as we have Dir LOW, but h
-  digitalWrite(motorlinksDir, HIGH); //vooruit
-  digitalWrite(motorrechtsDir, HIGH); //vooruit
-  analogWrite(motorrechtsPWM, 255-right_speed);
-  analogWrite(motorlinksPWM, 255-left_speed);
+  if (right_speed>=0){
+    digitalWrite(motorrechtsDir, HIGH); //vooruit
+    analogWrite(motorrechtsPWM, 255-right_speed);
+  } else {
+    digitalWrite(motorrechtsDir, LOW); //achteruituit
+    analogWrite(motorrechtsPWM, -right_speed);
+  }
+  if (left_speed>=0){
+    digitalWrite(motorlinksDir, HIGH); //vooruit
+    analogWrite(motorlinksPWM, 255-left_speed);
+  } else {
+    digitalWrite(motorlinksDir, LOW); //achteruit
+    analogWrite(motorlinksPWM, -left_speed);
+  }
 }
 

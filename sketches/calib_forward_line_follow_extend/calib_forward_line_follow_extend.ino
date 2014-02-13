@@ -30,8 +30,8 @@ int corrblack[5] = {0, 50, 0, 120, 50};
 #define LS_BLACKLINE  1 // een zwarte lijn
 #define LS_BLACKFIELD 2 // een zwart veld
 #define LS_WHITEFIELD 3 // een wit veld
-#define LS_BLACKLEFT  4 // zwart afbuigend naar rechts
-#define LS_BLACKRIGHT 5 // zwart afbuigend naar links
+#define LS_BLACKLEFT  4 // zwart afbuigend naar links
+#define LS_BLACKRIGHT 5 // zwart afbuigend naar rechts
 #define LS_BLACKSPLIT 6 // zwart links en rechts, niet midden
 
 //wijzigende variabelen

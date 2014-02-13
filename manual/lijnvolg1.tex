@@ -94,8 +94,8 @@ Laat ons de volgende aanpak kiezen: we bepalen een type lijn. In plaats van enke
  \item \ardo{#define LS\_BLACKLINE  1 // een zwarte lijn}
  \item \ardo{#define LS\_BLACKFIELD 2 // een zwart veld}
  \item \ardo{#define LS\_WHITEFIELD 3 // een wit veld}
- \item \ardo{#define LS\_BLACKLEFT  4 // zwart afbuigend naar rechts}
- \item \ardo{#define LS\_BLACKRIGHT 5 // zwart afbuigend naar links}
+ \item \ardo{#define LS\_BLACKLEFT  4 // zwart afbuigend naar links}
+ \item \ardo{#define LS\_BLACKRIGHT 5 // zwart afbuigend naar rechts}
  \item \ardo{#define LS\_BLACKSPLIT 6 // zwart links en rechts, niet midden}
 \end{enumerate}
 Pas de functie \ardo{sensors_read()} aan om op basis van de gemeten waarden te bepalen wat er gebeurt. Pas dan de \ardo{loop()} functie aan met een switch op basis van het resultaat: \ardo{switch (sensors_read())}. Voor \ardo{LS\_BLACKLINE} is het zoals in de basisversie, maar doe nu andere bewegingen in de andere gevallen.

@@ -3,10 +3,16 @@
 /************************************************************/
 
 // typ hier de aansluitingen van de motordriver, voor de twee motors
-#define motorlinksPWM 3
-#define motorlinksDir 2
-#define motorrechtsPWM 5
-#define motorrechtsDir 4
+#define motorrechtsPWM 3
+#define motorrechtsDir 2
+#define motorlinksPWM  5
+#define motorlinksDir  4
+
+//callibration variables
+#define calib_speed_corrR   0  //if motors deviate, correct it
+#define calib_speed_corrL   0  //if motors deviate, correct it
+#define calib_max_speed    255 //maximum value you want
+#define calib_no_speed     100 //lowest value that motors don't move anymore
 
 bool test=false;
 
@@ -50,10 +56,6 @@ long sensors[] = {0, 0, 0, 0, 0};
 // hoeveel verschil moet er zijn tussen grootste en kleinste waarden 
 // om te zeggen dat er een lijn gezien is
 #define ACCURACY 100
-//play with speed interval !!!
-//depends on battery also !!
-#define MAX_SPEED  200 //max 255!
-#define MIN_SPEED  0
 
 int speed_corr;
 int right_speed;
@@ -200,43 +202,54 @@ void calc_turn(){
     error_value = 0;
   }
   //convert to correct number
-  speed_corr = float(error_value)/float(max_err) * (MAX_SPEED-MIN_SPEED);
+  speed_corr = float(error_value)/float(max_err) * (calib_max_speed-calib_no_speed);
   if (error_value < -1000) {
     //line at sensor 0 move line slowly towards 2 (to left), by a right turn, so reducing speed right
     right_speed = 0; 
-    left_speed = MAX_SPEED/2;
+    left_speed = calib_max_speed/2;
     
   } else if (error_value < 0){
     //line at sensor 0 to 2, move line towards 2 (to left), by reducing speed right
-    right_speed = MAX_SPEED + speed_corr;
-    left_speed = MAX_SPEED;
+    right_speed = calib_max_speed + speed_corr;
+    left_speed = calib_max_speed;
   } else if (error_value > 1000) {
     //line at sensor 4 move line slowly towards 3 (to right), by a left turn, so reducing speed left
-    right_speed = MAX_SPEED/2;
+    right_speed = calib_max_speed/2;
     left_speed = 0;
   } else {
     //line at sensor 2 to 4, move line towards 2, by reducing speed left
-    right_speed = MAX_SPEED;
-    left_speed = MAX_SPEED - speed_corr;
+    right_speed = calib_max_speed;
+    left_speed = calib_max_speed - speed_corr;
   }
 }
 
 void motor_drive(int right_speed, int left_speed){
-  // Drive motors according to the calculated values
-  // Normally 255 - speed as we have Dir LOW, but h
+  // Drive motors according to the given values
+  int sgvr = 1;
+  if (right_speed != 0) {sgvr = abs(right_speed)/right_speed;}
+  int sgvl = 1;
+  if (left_speed != 0) {sgvl = abs(left_speed)/left_speed;}
+  int vr = abs(right_speed) + calib_speed_corrR;
+  int vl = abs(left_speed) + calib_speed_corrL;
+  if (vr > calib_max_speed) {vr = calib_max_speed;}
+  else if (vr<0) {vr = 0;}
+  vr = vr * sgvr;
+  if (vl > calib_max_speed) {vl = calib_max_speed;}
+  else if (vl<0) {vl = 0;}
+  vl = vl * sgvl;
+  
   if (right_speed>=0){
-    digitalWrite(motorrechtsDir, HIGH); //vooruit
-    analogWrite(motorrechtsPWM, 255-right_speed);
+    digitalWrite(motorrechtsDir, LOW); //vooruit
+    analogWrite(motorrechtsPWM, right_speed);
   } else {
-    digitalWrite(motorrechtsDir, LOW); //achteruituit
-    analogWrite(motorrechtsPWM, -right_speed);
+    digitalWrite(motorrechtsDir, HIGH); //achteruit
+    analogWrite(motorrechtsPWM, 255+right_speed);
   }
   if (left_speed>=0){
-    digitalWrite(motorlinksDir, HIGH); //vooruit
-    analogWrite(motorlinksPWM, 255-left_speed);
+    digitalWrite(motorlinksDir, LOW); //vooruit
+    analogWrite(motorlinksPWM, left_speed);
   } else {
-    digitalWrite(motorlinksDir, LOW); //achteruit
-    analogWrite(motorlinksPWM, -left_speed);
+    digitalWrite(motorlinksDir, HIGH); //achteruit
+    analogWrite(motorlinksPWM, 255+left_speed);
   }
 }
-

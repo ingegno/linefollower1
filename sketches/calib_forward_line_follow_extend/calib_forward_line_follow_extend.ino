@@ -21,7 +21,7 @@ bool test=false;
 
 #define SCHAAL_FOUT 1000
 
-int black[2]  = {700,1000}; // hiertussen zouden de waarden voor zwart moeten zijn
+int black[2]  = {700,1100}; // hiertussen zouden de waarden voor zwart moeten zijn
 //test of je groen, geel, wit kan zien
 //waarschijnlijk niet ....
 int green[2]  = { 75, 100};

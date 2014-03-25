@@ -9,19 +9,14 @@
 #define motorlinksDir  4
 
 
-
 //callibration variables
 #define calib_speed_corrR   0  //if motors deviate, correct it
 #define calib_speed_corrL   0  //if motors deviate, correct it
 
 //new batteries
-#define calib_max_speed    180 //maximum value you want
-#define calib_no_speed     70 //lowest value that motors don't move anymore
-#define SLOW_SPEED 160         //a slow speed good for searching
-//old batteries
-//#define calib_max_speed    255 //maximum value you want
-//#define calib_no_speed     110 //lowest value that motors don't move anymore
-//#define SLOW_SPEED 200         //a slow speed good for searching
+#define newbat true
+
+int calib_max_speed, calib_no_speed, SLOW_SPEED;
 bool test=false;
 
 //geen PID control http://en.wikipedia.org/wiki/PID_controller
@@ -30,10 +25,6 @@ bool test=false;
 #define SCHAAL_FOUT 1000
 
 int black[2]  = {600,1100}; // hiertussen zouden de waarden voor zwart moeten zijn
-//test of je groen, geel, wit kan zien
-//waarschijnlijk niet ....
-int green[2]  = { 75, 100};
-int yellow[2] = { 80, 105};
 int white[2]  = { 0, 500};
 
 //Saya  robot
@@ -52,6 +43,8 @@ int corrblack[5] = {0, -10, 20, 0, 0};
 #define LS_BLACKLEFT  4 // zwart afbuigend naar links
 #define LS_BLACKRIGHT 5 // zwart afbuigend naar rechts
 #define LS_BLACKSPLIT 6 // zwart links en rechts, niet midden
+#define LS_BLACKEXTREMELEFT  7 // zwart uiterst links
+#define LS_BLACKEXTREMERIGHT 8 // zwart uiterst rechts
 
 //wijzigende variabelen
 float sensors_average;
@@ -73,11 +66,21 @@ long sensors[] = {0, 0, 0, 0, 0};
 int speed_corr;
 int right_speed;
 int left_speed;
-
- int new_battery_correctionBL = 30;
-  int new_battery_correctionBR = 30;
+int turn_correction;
   
 void setup(){
+  if (newbat) {
+    calib_max_speed = 180; //maximum value you want
+    calib_no_speed  =  70; //lowest value that motors don't move anymore
+    SLOW_SPEED      = 140;         //a slow speed good for searching
+    turn_correction =  30;
+  } else {
+  //old batteries
+    calib_max_speed = 255; //maximum value you want
+    calib_no_speed  = 110; //lowest value that motors don't move anymore
+    SLOW_SPEED      = 200;         //a slow speed good for searching
+    turn_correction =   0;
+  }
   if (test) {
     Serial.begin(9600);
   }
@@ -93,6 +96,8 @@ void loop(){
   int lineseen = sensors_read();
   switch (lineseen) {
     case LS_BLACKLINE:
+    case LS_BLACKLEFT:
+    case LS_BLACKRIGHT:
       calc_turn();
       //Computes the error to be corrected
       motor_drive(right_speed, left_speed); //Sends PWM signals to the motors
@@ -112,28 +117,17 @@ void loop(){
       //a black field. here we should stop. wait a sec, try again, if still problem, go backward a bit, try again?
       motor_drive(0, 0);
       break;
-    case LS_BLACKLEFT:
+    case LS_BLACKEXTREMELEFT:
       // we assume a sharp turn to left
-      //motor_drive(0, 0);
-      //delay(500);
-      // turn a bit to correct
-      //new batteries
-      
-      motor_drive(180-new_battery_correctionBL, -140+new_battery_correctionBL);
-      //old batteries
-     // motor_drive(180, -140);
+      motor_drive(180-turn_correction, -140+turn_correction);
       delay(300);
+      motor_drive(0,0);
       break;
-    case LS_BLACKRIGHT:
+    case LS_BLACKEXTREMERIGHT:
       // we assume a sharp turn to right
-      //motor_drive(0, 0);
-      //delay(500);
-     
-      // turn a bit to correct
-       //new batteries
-     
-      motor_drive(-140+new_battery_correctionBR , 180-new_battery_correctionBR );
+      motor_drive(-140+turn_correction , 180-turn_correction);
       delay(300);
+      motor_drive(0,0);
       break;
     default:
       motor_drive(0,0);
@@ -188,10 +182,14 @@ boolean sensors_read(){
     seen = LS_UNKNOWN;
   } else if (sensors[2] < white[1] && sensors[0] > black[0] && sensors[4] > black[0]) {
     seen = LS_BLACKSPLIT;
-  } else if (sensors[0] < white[1] && sensors[3] > black[0] && sensors[4] > black[0]) {
+  } else if (sensors[0] < white[1] && sensors[3] > black[0] && sensors[2] < black[0]) {
     seen = LS_BLACKLEFT;
-  } else if (sensors[4] < white[1] && sensors[1] > black[0] && sensors[0] > black[0]) {
+  } else if (sensors[0] < white[1] && sensors[4] > black[0]) {
+    seen = LS_BLACKEXTREMELEFT;
+  } else if (sensors[4] < white[1] && sensors[1] > black[0] && sensors[2] < black[0]) {
     seen = LS_BLACKRIGHT;
+  } else if (sensors[4] < white[1] && sensors[0] > black[0]) {
+    seen = LS_BLACKEXTREMERIGHT;
   } else {
     seen = LS_BLACKLINE;
   }

@@ -11,9 +11,11 @@
 //callibration variables
 #define calib_speed_corrR   0  //if motors deviate, correct it
 #define calib_speed_corrL   0  //if motors deviate, correct it
-#define calib_max_speed    255 //maximum value you want
-#define calib_no_speed     100 //lowest value that motors don't move anymore
 
+//new batteries
+#define newbat true
+
+int calib_max_speed, calib_no_speed;
 bool test=false;
 
 //geen PID control http://en.wikipedia.org/wiki/PID_controller
@@ -22,15 +24,16 @@ bool test=false;
 
 #define SCHAAL_FOUT 1000
 
-int black[2]  = {600,1000}; // hiertussen zouden de waarden voor zwart moeten zijn
-//test of je groen, geel, wit kan zien
-//waarschijnlijk niet ....
-int green[2]  = { 75, 100};
-int yellow[2] = { 80, 105};
-int white[2]  = { 40, 150};
+int black[2]  = {600,1100}; // hiertussen zouden de waarden voor zwart moeten zijn
+int white[2]  = { 0, 500};
 
-int corrwhite[5] = {0, 0, 0, 100, 200};
-int corrblack[5] = {0, 50, 0, 120, 50};
+//Saya  robot
+//int corrwhite[5] = {0, 0, 0, 100, 200};
+//int corrblack[5] = {0, 50, 0, 20, 50};
+//Gudrun robot
+int corrwhite[5] = {0, 0, 50, 0, 0};
+int corrblack[5] = {0, -10, 20, 0, 0};
+
 
 //wijzigende variabelen
 float sensors_average;
@@ -54,6 +57,14 @@ int right_speed;
 int left_speed;
 
 void setup(){
+  if (newbat) {
+    calib_max_speed = 180; //maximum value you want
+    calib_no_speed  =  70; //lowest value that motors don't move anymore
+  } else {
+  //old batteries
+    calib_max_speed = 255; //maximum value you want
+    calib_no_speed  = 110; //lowest value that motors don't move anymore
+  }
   if (test) {
     Serial.begin(9600);
   }

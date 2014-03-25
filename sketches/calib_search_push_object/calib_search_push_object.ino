@@ -11,9 +11,11 @@
 //callibration variables
 #define calib_speed_corrR   0  //if motors deviate, correct it
 #define calib_speed_corrL   0  //if motors deviate, correct it
-#define calib_max_speed    255 //maximum value you want
-#define calib_no_speed     100 //lowest value that motors don't move anymore
-#define SLOW_SPEED 120         //a slow speed good for searching
+
+//new batteries
+#define newbat true
+
+int calib_max_speed, calib_no_speed, SLOW_SPEED, search_turn_speed;
 
 // afstandsmeting
 #define trigPin 12
@@ -26,15 +28,15 @@ bool test=false;
 
 #define SCHAAL_FOUT 1000
 
-int black[2]  = {700,1000}; // hiertussen zouden de waarden voor zwart moeten zijn
-//test of je groen, geel, wit kan zien
-//waarschijnlijk niet ....
-int green[2]  = { 75, 100};
-int yellow[2] = { 80, 105};
+int black[2]  = {600,1100}; // hiertussen zouden de waarden voor zwart moeten zijn
 int white[2]  = { 0, 500};
 
-int corrwhite[5] = {0, 0, 0, 100, 200};
-int corrblack[5] = {0, 50, 0, 120, 50};
+//Saya  robot
+//int corrwhite[5] = {0, 0, 0, 100, 200};
+//int corrblack[5] = {0, 50, 0, 20, 50};
+//Gudrun robot
+int corrwhite[5] = {0, 0, 40, 0, 0};
+int corrblack[5] = {0, -10, 20, 0, 0};
 
 // Wat kunnen we zien met 5 sensoren van lijnsensor?
 #define LS_UNKNOWN    0 // we kunnen niet bepalen wat we zien
@@ -44,6 +46,8 @@ int corrblack[5] = {0, 50, 0, 120, 50};
 #define LS_BLACKLEFT  4 // zwart afbuigend naar rechts
 #define LS_BLACKRIGHT 5 // zwart afbuigend naar links
 #define LS_BLACKSPLIT 6 // zwart links en rechts, niet midden
+#define LS_BLACKEXTREMELEFT  7 // zwart uiterst links
+#define LS_BLACKEXTREMERIGHT 8 // zwart uiterst rechts
 
 //wijzigende variabelen
 float sensors_average;
@@ -65,9 +69,9 @@ long sensors[] = {0, 0, 0, 0, 0};
 int speed_corr;
 int right_speed;
 int left_speed;
+int turn_correction;
 
-
-int max_zichtbare_afstand = 80; //afstand in cm die we onderzoeken, verder zien we niet!
+int max_zichtbare_afstand = 35; //afstand in cm die we onderzoeken, verder zien we niet!
 // wanneer stoppen?
 int stop_afstand = 5; // stopt aan 10 cm
 float distance_object;
@@ -81,6 +85,20 @@ bool finished = false;
 
 
 void setup(){
+  if (newbat) {
+    calib_max_speed = 180; //maximum value you want
+    calib_no_speed  =  70; //lowest value that motors don't move anymore
+    SLOW_SPEED      = 140;         //a slow speed good for searching
+    turn_correction =  30;
+    search_turn_speed = 180;
+  } else {
+  //old batteries
+    calib_max_speed = 255; //maximum value you want
+    calib_no_speed  = 110; //lowest value that motors don't move anymore
+    SLOW_SPEED      = 200;         //a slow speed good for searching
+    turn_correction =   0;
+    search_turn_speed = 220;
+  }
   if (test) {
     Serial.begin(9600);
   }
@@ -142,10 +160,14 @@ boolean sensors_read(){
     seen = LS_UNKNOWN;
   } else if (sensors[2] < white[1] && sensors[0] > black[0] && sensors[4] > black[0]) {
     seen = LS_BLACKSPLIT;
-  } else if (sensors[0] < white[1] && sensors[3] > black[0] && sensors[4] > black[0]) {
+  } else if (sensors[0] < white[1] && sensors[3] > black[0] && sensors[2] < black[0]) {
     seen = LS_BLACKLEFT;
-  } else if (sensors[4] < white[1] && sensors[1] > black[0] && sensors[0] > black[0]) {
+  } else if (sensors[0] < white[1] && sensors[4] > black[0]) {
+    seen = LS_BLACKEXTREMELEFT;
+  } else if (sensors[4] < white[1] && sensors[1] > black[0] && sensors[2] < black[0]) {
     seen = LS_BLACKRIGHT;
+  } else if (sensors[4] < white[1] && sensors[0] > black[0]) {
+    seen = LS_BLACKEXTREMERIGHT;
   } else {
     seen = LS_BLACKLINE;
   }
@@ -165,9 +187,13 @@ boolean sensors_read(){
 
 void loop(){ 
   //Reads sensor values and computes sensor sum and weighted average
+  int nrseen = 0;
   int lineseen = sensors_read();
+  onsearchfield = false;
   switch (lineseen) {
     case LS_BLACKLINE:
+    case LS_BLACKLEFT:
+    case LS_BLACKRIGHT:
       finished = false;
       onsearchfield = false;
       motor_drive(0, 0);
@@ -183,21 +209,23 @@ void loop(){
       }
       break;
     case LS_WHITEFIELD:
-      //a white field. here we should stop, go backward a bit, verify, go forward, search for can
-      if (!finished && !onsearchfield){
-        motor_drive(-160,-160);
-        delay(500);
-        motor_drive(0,0);
-        lineseen = sensors_read();
-        if (lineseen == LS_BLACKLINE){
-          // good, move forward again
-          onsearchfield = true;
-          motor_drive(160,160);
-          delay(500);
+      motor_drive(0,0);
+      if (test) {
+        Serial.println("white line !!!");
+      }
+      //we do three repeats
+      for (int seeagain=0; seeagain<3; seeagain++) {
+        if (LS_WHITEFIELD == sensors_read()){
+          nrseen += 1;
+          delay(4);
         }
       }
+      if (nrseen == 3) {
+        onsearchfield = true;
+      } else {
+        onsearchfield = false;
+      }      
       if (!finished && onsearchfield){
-        motor_drive(0,0);
         search_object();
         move_to_object();
         push_object();
@@ -207,30 +235,32 @@ void loop(){
       //a black field. here we should stop. wait a sec, try again, if still problem, go backward a bit, try again?
       motor_drive(0, 0);
       break;
-    case LS_BLACKLEFT:
+    case LS_BLACKEXTREMELEFT:
       // we assume a sharp turn to left
       motor_drive(0, 0);
       break;
-    case LS_BLACKRIGHT:
+    case LS_BLACKEXTREMERIGHT:
       // we assume a sharp turn to right
       motor_drive(0, 0);
       break;
     default:
-      motor_drive(0,0);
+      motor_drive(0, 0);
       break;
   }
   if (finished){
-    motor_drive(0,0);
+    motor_drive(0, 0);
   }
 }
-
 
 void search_object(){
   //we look for the object. First rotate left 180 degrees
   motor_drive(0,0);
-  delay(1000);
+      if (test) {
+        Serial.println("Searching object!");
+      }
+  //delay(1000);
   //now rotate and scan
-  motor_drive(-180,180);
+  motor_drive(-search_turn_speed,search_turn_speed);
   bool cont = true;
   while (cont) {
     switch (measure_distance(distance_object)) {
@@ -256,6 +286,9 @@ int measure_distance(float &distance){
   duration = pulseIn(echoPin, HIGH);
   //Merk op: Out of range == 0 cm!
   distance = (duration/2) / 29.1;
+  if (test) {
+        Serial.print("Dist ");Serial.print(distance);Serial.println(" ");
+    }
   if (distance <= 0 || distance >= max_zichtbare_afstand){
     distance = max_zichtbare_afstand;
     return NO_OBJECT;
@@ -271,11 +304,15 @@ int measure_distance(float &distance){
 void move_to_object(){
   //we go to object as long as we are on WHITEFIELD
   int speedval;
+      if (test) {
+        Serial.println("Moving to object");
+      }
   motor_drive(0,0);
   int pos_obj;
-  pos_obj = measure_distance(distance_object);
+  //pos_obj = measure_distance(distance_object);
   bool cont=true;
   while (cont){
+    pos_obj = measure_distance(distance_object);
     switch (pos_obj){
       case NO_OBJECT:
         //problem, research the object
@@ -283,12 +320,14 @@ void move_to_object(){
         break;
       case OBJECT_FAR:
       case OBJECT_NEAR:
-        speedval = calib_max_speed * max(SLOW_SPEED, (distance_object)/(max_zichtbare_afstand));
+        speedval = min(calib_max_speed, calib_max_speed * max(SLOW_SPEED/(calib_max_speed*1.0), (distance_object)/(max_zichtbare_afstand)));
+        Serial.print("Moving with speed ");Serial.println(speedval);
         motor_drive(speedval, speedval);
-        delay(1500);
-        motor_drive(0, 0);
+        delay(500);
+        //motor_drive(0, 0);
         break;
       case OBJECT_COLLIDE:
+        motor_drive(0, 0);
         cont=false;
         break;
     }
@@ -303,7 +342,7 @@ void move_to_object(){
       //problem, at edge of field!, stop and search next cycle.
       cont = false;
       motor_drive(-180,180);
-      delay(1500);
+      delay(500);
       motor_drive(0,0);
     }
   }
@@ -311,14 +350,18 @@ void move_to_object(){
 
 void push_object(){
   // we now are or in front of object, or on edge search field. In first case, push it out.
+      if (test) {
+        Serial.println("Pushing object");
+      }
   int pos_obj = measure_distance(distance_object);
   if (pos_obj == OBJECT_COLLIDE) {
     //we drive forward slowly for 7 sec?
-    motor_drive(SLOW_SPEED, SLOW_SPEED);
-    delay(7000);
+    motor_drive(calib_max_speed, calib_max_speed);
+    delay(8000);
     motor_drive(calib_max_speed,-calib_max_speed);
     delay(2000);
-    finished = true;
+    //finished = true;
+    motor_drive(0,0);
   }
 }
 

@@ -70,10 +70,10 @@ int turn_correction;
   
 void setup(){
   if (newbat) {
-    calib_max_speed = 180; //maximum value you want
+    calib_max_speed = 170; //maximum value you want
     calib_no_speed  =  70; //lowest value that motors don't move anymore
-    SLOW_SPEED      = 140;         //a slow speed good for searching
-    turn_correction =  30;
+    SLOW_SPEED      = 120;         //a slow speed good for searching
+    turn_correction =  40;
   } else {
   //old batteries
     calib_max_speed = 255; //maximum value you want
@@ -120,13 +120,13 @@ void loop(){
     case LS_BLACKEXTREMELEFT:
       // we assume a sharp turn to left
       motor_drive(180-turn_correction, -140+turn_correction);
-      delay(300);
+      delay(100);
       motor_drive(0,0);
       break;
     case LS_BLACKEXTREMERIGHT:
       // we assume a sharp turn to right
       motor_drive(-140+turn_correction , 180-turn_correction);
-      delay(300);
+      delay(100);
       motor_drive(0,0);
       break;
     default:
@@ -224,16 +224,16 @@ void calc_turn(){
   }
   //convert to correct number
   speed_corr = float(error_value)/float(max_err) * (calib_max_speed-calib_no_speed);
-  if (error_value < -1000) {
+  if (speed_corr < -1000) {
     //line at sensor 0 move line slowly towards 2 (to left), by a right turn, so reducing speed right
     right_speed = 0; 
     left_speed = calib_max_speed/2;
     
-  } else if (error_value < 0){
+  } else if (speed_corr < 0){
     //line at sensor 0 to 2, move line towards 2 (to left), by reducing speed right
     right_speed = calib_max_speed + speed_corr;
     left_speed = calib_max_speed;
-  } else if (error_value > 1000) {
+  } else if (speed_corr > 1000) {
     //line at sensor 4 move line slowly towards 3 (to right), by a left turn, so reducing speed left
     right_speed = calib_max_speed/2;
     left_speed = 0;

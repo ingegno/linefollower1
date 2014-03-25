@@ -157,16 +157,16 @@ void calc_turn(){
   if (test){
     Serial.print(" Speed corr: "); Serial.print(speed_corr);Serial.print(" ");
   }
-  if (error_value < -1000) {
+  if (speed_corr < -1000) {
     //line at sensor 0 move line slowly towards 2 (to left), by a right turn, so reducing speed right
     right_speed = 0; 
     left_speed = calib_max_speed/2;
     
-  } else if (error_value < 0){
+  } else if (speed_corr < 0){
     //line at sensor 0 to 2, move line towards 2 (to left), by reducing speed right
     right_speed = calib_max_speed + speed_corr;
     left_speed = calib_max_speed;
-  } else if (error_value > 1000) {
+  } else if (speed_corr > 1000) {
     //line at sensor 4 move line slowly towards 3 (to right), by a left turn, so reducing speed left
     right_speed = calib_max_speed/2;
     left_speed = 0;

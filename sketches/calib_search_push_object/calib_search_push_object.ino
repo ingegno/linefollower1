@@ -3,10 +3,10 @@
 /************************************************************/
 
 // typ hier de aansluitingen van de motordriver, voor de twee motors
-#define motorlinksPWM 3
-#define motorlinksDir 2
-#define motorrechtsPWM 5
-#define motorrechtsDir 4
+#define motorrechtsPWM 3
+#define motorrechtsDir 2
+#define motorlinksPWM  5
+#define motorlinksDir  4
 
 //callibration variables
 #define calib_speed_corrR   0  //if motors deviate, correct it
@@ -35,7 +35,7 @@ int white[2]  = { 0, 500};
 //int corrwhite[5] = {0, 0, 0, 100, 200};
 //int corrblack[5] = {0, 50, 0, 20, 50};
 //Gudrun robot
-int corrwhite[5] = {0, 0, 40, 0, 0};
+int corrwhite[5] = {0, 0, 50, 0, 0};
 int corrblack[5] = {0, -10, 20, 0, 0};
 
 // Wat kunnen we zien met 5 sensoren van lijnsensor?
@@ -43,8 +43,8 @@ int corrblack[5] = {0, -10, 20, 0, 0};
 #define LS_BLACKLINE  1 // een zwarte lijn
 #define LS_BLACKFIELD 2 // een zwart veld
 #define LS_WHITEFIELD 3 // een wit veld
-#define LS_BLACKLEFT  4 // zwart afbuigend naar rechts
-#define LS_BLACKRIGHT 5 // zwart afbuigend naar links
+#define LS_BLACKLEFT  4 // zwart afbuigend naar links
+#define LS_BLACKRIGHT 5 // zwart afbuigend naar rechts
 #define LS_BLACKSPLIT 6 // zwart links en rechts, niet midden
 #define LS_BLACKEXTREMELEFT  7 // zwart uiterst links
 #define LS_BLACKEXTREMERIGHT 8 // zwart uiterst rechts

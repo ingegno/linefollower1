@@ -48,8 +48,8 @@ int corrblack[5] = {0, -10, 20, 0, 0};
 #define LS_BLACKSPLIT 6 // zwart links en rechts, niet midden
 #define LS_BLACKEXTREMELEFT  7 // zwart uiterst links
 #define LS_BLACKEXTREMERIGHT 8 // zwart uiterst rechts
-#define LS_BLACKBANKLEFT  9 // zwart uiterst rechts
-#define LS_BLACKBANKRIGHT 10 // zwart uiterst rechts
+#define LS_BLACKBANKLEFT     9 // zwart uiterst rechts
+#define LS_BLACKBANKRIGHT   10 // zwart uiterst rechts
 
 //wijzigende variabelen
 float sensors_average;
@@ -89,7 +89,7 @@ bool finished = false;
 void setup(){
   if (newbat) {
     calib_max_speed = 160; //maximum value you want
-    calib_no_speed  =  70; //lowest value that motors don't move anymore
+    calib_no_speed  =  90; //lowest value that motors don't move anymore
     SLOW_SPEED      = 120;         //a slow speed good for searching
     turn_correction =  40;
   } else {
@@ -145,14 +145,14 @@ void loop(){
       if (test) {
         Serial.println("white line !!!");
       }
-      if (prevtimewhitefield - millis() > 1000UL) {
+      if (millis() - prevtimewhitefield < 1000UL) {
         //really on white field
         motor_drive(0,0);
         onsearchfield = true;
       } else {
         //back up a bit to find the line again
         motor_drive(-calib_max_speed, -calib_max_speed);
-        delay(300);
+        delay(500);
         motor_drive(0,0);
       }
       prevtimewhitefield = millis();

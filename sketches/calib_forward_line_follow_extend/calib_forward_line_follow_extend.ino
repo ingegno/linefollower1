@@ -43,10 +43,10 @@ int corrblack[5] = {0, -10, 20, 0, 0};
 #define LS_BLACKLEFT  4 // zwart afbuigend naar links
 #define LS_BLACKRIGHT 5 // zwart afbuigend naar rechts
 #define LS_BLACKSPLIT 6 // zwart links en rechts, niet midden
-#define LS_BLACKEXTREMELEFT   7 // zwart uiterst links
-#define LS_BLACKEXTREMERIGHT  8 // zwart uiterst rechts
-#define LS_BLACKBANKLEFT  9 // zwart uiterst rechts
-#define LS_BLACKBANKRIGHT 10 // zwart uiterst rechts
+#define LS_BLACKEXTREMELEFT  7 // zwart uiterst links
+#define LS_BLACKEXTREMERIGHT 8 // zwart uiterst rechts
+#define LS_BLACKBANKLEFT     9 // zwart uiterst rechts
+#define LS_BLACKBANKRIGHT   10 // zwart uiterst rechts
 
 //wijzigende variabelen
 float sensors_average;
@@ -72,8 +72,8 @@ int turn_correction;
   
 void setup(){
   if (newbat) {
-    calib_max_speed = 160; //maximum value you want
-    calib_no_speed  =  70; //lowest value that motors don't move anymore
+    calib_max_speed = 180; //maximum value you want
+    calib_no_speed  =  110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 120;         //a slow speed good for searching
     turn_correction =  40;
   } else {
@@ -99,7 +99,9 @@ void loop(){
   int lineseen = sensors_read();
   switch (lineseen) {
     case LS_BLACKLINE:
+    case LS_BLACKBANKLEFT:
     case LS_BLACKLEFT:
+    case LS_BLACKBANKRIGHT:
     case LS_BLACKRIGHT:
       calc_turn();
       //Computes the error to be corrected
@@ -114,16 +116,18 @@ void loop(){
       break;
     case LS_WHITEFIELD:
       //a white field. here we should stop, go backward a bit, verify, go forward, search for can
-      if (prevtimewhitefield - millis() > 1000UL) {
+      motor_drive(0,0);
+      if (millis() - prevtimewhitefield < 1000UL) {
         //really on white field
-        motor_drive(0,0);
-        delay(10000);
+        delay(5000);
       } else {
-        motor_drive(-calib_max_speed, -calib_max_speed);
-        delay(300);
+        prevtimewhitefield = millis();
+        motor_drive(0,0);
+        delay(100);
+        motor_drive(-calib_max_speed+turn_correction, -calib_max_speed+turn_correction);
+        delay(500);
         motor_drive(0,0);
       }
-      prevtimewhitefield = millis();
       break;
     case LS_BLACKFIELD:
       //a black field. here we should stop. wait a sec, try again, if still problem, go backward a bit, try again?
@@ -135,24 +139,24 @@ void loop(){
       delay(100);
       motor_drive(0,0);
       break;
-    case LS_BLACKBANKLEFT:
-      // we assume a sharp turn to left
-      motor_drive(calib_max_speed-turn_correction, 0);
-      delay(100);
-      motor_drive(0,0);
-      break;
+//    case LS_BLACKBANKLEFT:
+//      // we assume a sharp turn to left
+//      motor_drive(calib_max_speed-turn_correction, 0);
+//      delay(100);
+//      motor_drive(0,0);
+//      break;
     case LS_BLACKEXTREMERIGHT:
       // we assume a sharp turn to right
       motor_drive(-calib_max_speed+turn_correction , calib_max_speed-turn_correction);
       delay(100);
       motor_drive(0,0);
       break;
-    case LS_BLACKBANKRIGHT:
-      // we assume a sharp turn to right
-      motor_drive(0 , calib_max_speed-turn_correction);
-      delay(100);
-      motor_drive(0,0);
-      break;
+//    case LS_BLACKBANKRIGHT:
+//      // we assume a sharp turn to right
+//      motor_drive(0 , calib_max_speed-turn_correction);
+//      delay(100);
+//      motor_drive(0,0);
+//      break;
     default:
       motor_drive(0,0);
       break;

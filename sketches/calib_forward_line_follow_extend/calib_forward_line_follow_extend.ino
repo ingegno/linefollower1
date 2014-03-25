@@ -8,12 +8,20 @@
 #define motorlinksPWM  5
 #define motorlinksDir  4
 
+
+
 //callibration variables
 #define calib_speed_corrR   0  //if motors deviate, correct it
 #define calib_speed_corrL   0  //if motors deviate, correct it
-#define calib_max_speed    255 //maximum value you want
-#define calib_no_speed     100 //lowest value that motors don't move anymore
 
+//new batteries
+#define calib_max_speed    180 //maximum value you want
+#define calib_no_speed     70 //lowest value that motors don't move anymore
+#define SLOW_SPEED 160         //a slow speed good for searching
+//old batteries
+//#define calib_max_speed    255 //maximum value you want
+//#define calib_no_speed     110 //lowest value that motors don't move anymore
+//#define SLOW_SPEED 200         //a slow speed good for searching
 bool test=false;
 
 //geen PID control http://en.wikipedia.org/wiki/PID_controller
@@ -21,15 +29,20 @@ bool test=false;
 
 #define SCHAAL_FOUT 1000
 
-int black[2]  = {700,1100}; // hiertussen zouden de waarden voor zwart moeten zijn
+int black[2]  = {600,1100}; // hiertussen zouden de waarden voor zwart moeten zijn
 //test of je groen, geel, wit kan zien
 //waarschijnlijk niet ....
 int green[2]  = { 75, 100};
 int yellow[2] = { 80, 105};
 int white[2]  = { 0, 500};
 
-int corrwhite[5] = {0, 0, 0, 100, 200};
-int corrblack[5] = {0, 50, 0, 120, 50};
+//Saya  robot
+//int corrwhite[5] = {0, 0, 0, 100, 200};
+//int corrblack[5] = {0, 50, 0, 20, 50};
+//Gudrun robot
+int corrwhite[5] = {0, 0, 50, 0, 0};
+int corrblack[5] = {0, -10, 20, 0, 0};
+
 
 // Wat kunnen we zien met 5 sensoren van lijnsensor?
 #define LS_UNKNOWN    0 // we kunnen niet bepalen wat we zien
@@ -61,6 +74,9 @@ int speed_corr;
 int right_speed;
 int left_speed;
 
+ int new_battery_correctionBL = 30;
+  int new_battery_correctionBR = 30;
+  
 void setup(){
   if (test) {
     Serial.begin(9600);
@@ -101,15 +117,22 @@ void loop(){
       //motor_drive(0, 0);
       //delay(500);
       // turn a bit to correct
-      motor_drive(180, -140);
+      //new batteries
+      
+      motor_drive(180-new_battery_correctionBL, -140+new_battery_correctionBL);
+      //old batteries
+     // motor_drive(180, -140);
       delay(300);
       break;
     case LS_BLACKRIGHT:
       // we assume a sharp turn to right
       //motor_drive(0, 0);
       //delay(500);
+     
       // turn a bit to correct
-      motor_drive(-140, 180);
+       //new batteries
+     
+      motor_drive(-140+new_battery_correctionBR , 180-new_battery_correctionBR );
       delay(300);
       break;
     default:

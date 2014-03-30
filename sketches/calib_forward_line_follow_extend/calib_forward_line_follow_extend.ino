@@ -8,7 +8,6 @@
 #define motorlinksPWM  5
 #define motorlinksDir  4
 
-
 //callibration variables
 #define calib_speed_corrR   0  //if motors deviate, correct it
 #define calib_speed_corrL   0  //if motors deviate, correct it
@@ -276,7 +275,6 @@ boolean sensors_read(){
   }
   return seen;
 }
-
 
 void calc_turn(){
   

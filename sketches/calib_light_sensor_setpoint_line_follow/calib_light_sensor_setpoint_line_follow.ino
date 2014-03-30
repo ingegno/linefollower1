@@ -15,8 +15,23 @@ int white[2]  = {  0, 500};
 //int corrwhite[5] = {0, 0, 0, 100, 200};
 //int corrblack[5] = {0, 50, 0, 20, 50};
 //Gudrun robot
-int corrwhite[5] = {0, 0, 50, 0, 0};
-int corrblack[5] = {0, -10, 20, 0, 0};
+//int corrwhite[5] = {0, 0, 50, 0, 0};
+//int corrblack[5] = {0, -10, 20, 0, 0};
+//Thiemen robot
+//int corrwhite[5] = {0, 0, 0, 0, 0};
+//int corrblack[5] = {0, 70, 50, 30, 40};
+//Jasper robot
+//int corrwhite[5] = {100, 0, 0, 0, 100};
+//int corrblack[5] = {0, 0, 0, 0, 0};
+//Blonde stef robot
+//int corrwhite[5] = {40, 0, 0, 0, 0};
+//int corrblack[5] = {40, 0, 0, 0, 0};
+// stef robot
+//int corrwhite[5] = {0, 0, 100, 0, 0};
+//int corrblack[5] = {0, 0, 0, 0, 0};
+// marie-louise robot
+int corrwhite[5] = {0, 100, 0, 0, 40};
+int corrblack[5] = {0, 0, 0, 0, 0};
 
 
 //wijzigende variabelen

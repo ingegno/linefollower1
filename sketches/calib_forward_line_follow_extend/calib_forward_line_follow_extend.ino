@@ -13,6 +13,16 @@
 #define calib_speed_corrR   0  //if motors deviate, correct it
 #define calib_speed_corrL   0  //if motors deviate, correct it
 
+//robots
+#define SAYA    0
+#define GUDRUN  1
+#define THIEMEN 2
+#define JASPER  3
+#define BLSTEF  4
+#define STEF    5
+#define MLOUISE 6
+int ROBOT = MLOUISE;
+
 //new batteries
 #define newbat true
 
@@ -31,8 +41,23 @@ int white[2]  = { 0, 500};
 //int corrwhite[5] = {0, 0, 0, 100, 200};
 //int corrblack[5] = {0, 50, 0, 20, 50};
 //Gudrun robot
-int corrwhite[5] = {0, 0, 50, 0, 0};
-int corrblack[5] = {0, -10, 20, 0, 0};
+//int corrwhite[5] = {0, 0, 50, 0, 0};
+//int corrblack[5] = {0, -10, 20, 0, 0};
+//Thiemen robot
+//int corrwhite[5] = {0, 0, 0, 0, 0};
+//int corrblack[5] = {0, 70, 50, 30, 40};
+//Jasper robot
+//int corrwhite[5] = {100, 0, 0, 0, 100};
+//int corrblack[5] = {0, 0, 0, 0, 0};
+//Blonde stef robot
+//int corrwhite[5] = {40, 0, 0, 0, 0};
+//int corrblack[5] = {40, 0, 0, 0, 0};
+// stef robot
+//int corrwhite[5] = {0, 0, 100, 0, 0};
+//int corrblack[5] = {0, 0, 0, 0, 0};
+// marie-louise robot
+int corrwhite[5] = {0, 100, 0, 0, 40};
+int corrblack[5] = {0, 0, 0, 0, 0};
 
 
 // Wat kunnen we zien met 5 sensoren van lijnsensor?
@@ -76,12 +101,24 @@ void setup(){
     calib_no_speed  =  110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 120;         //a slow speed good for searching
     turn_correction =  40;
+    if (ROBOT==THIEMEN)
+      {calib_max_speed = 160;
+      } else if (ROBOT=BLSTEF)
+      {calib_max_speed = 140;
+       calib_no_speed = 75;
+      }
   } else {
   //old batteries
     calib_max_speed = 255; //maximum value you want
     calib_no_speed  = 110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 200;         //a slow speed good for searching
     turn_correction =   0;
+  }
+  if (ROBOT == THIEMEN){
+    black[0] = 700;
+  } else if (ROBOT == JASPER){
+    black[0] = 700;
+    white[1] = 600;
   }
   if (test) {
     Serial.begin(9600);
@@ -127,6 +164,7 @@ void loop(){
         motor_drive(-calib_max_speed+turn_correction, -calib_max_speed+turn_correction);
         delay(500);
         motor_drive(0,0);
+        delay(100);
       }
       break;
     case LS_BLACKFIELD:
@@ -259,20 +297,33 @@ void calc_turn(){
   if (error_value < -1000) {
     //line at sensor 0 move line slowly towards 2 (to left), by a right turn, so reducing speed right
     right_speed = 0; 
-    left_speed = calib_max_speed/2;
-    
+    left_speed = SLOW_SPEED;
+    if (ROBOT == THIEMEN) {
+      right_speed = -SLOW_SPEED;
+      left_speed  = SLOW_SPEED;
+    }
   } else if (error_value < 0){
     //line at sensor 0 to 2, move line towards 2 (to left), by reducing speed right
     right_speed = calib_max_speed + speed_corr;
     left_speed = calib_max_speed;
+    if (ROBOT == THIEMEN) {
+      left_speed  = calib_max_speed + 2*speed_corr;
+    }
   } else if (error_value > 1000) {
     //line at sensor 4 move line slowly towards 3 (to right), by a left turn, so reducing speed left
-    right_speed = calib_max_speed/2;
+    right_speed = SLOW_SPEED;
     left_speed = 0;
+    if (ROBOT == THIEMEN) {
+      right_speed = SLOW_SPEED;
+      left_speed  = -SLOW_SPEED;
+    }
   } else {
     //line at sensor 2 to 4, move line towards 2, by reducing speed left
     right_speed = calib_max_speed;
     left_speed = calib_max_speed - speed_corr;
+    if (ROBOT == THIEMEN) {
+      left_speed  = calib_max_speed - 2*speed_corr;
+    }
   }
 }
 

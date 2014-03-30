@@ -12,7 +12,6 @@ This sketch to calibrate forward movement.
 bool test=true;
 
 //callibration variables
-//Gudrun
 #define calib_speed_corrR   0  //if motors deviate, correct it
 #define calib_speed_corrL   0  //if motors deviate, correct it
 //new batteries

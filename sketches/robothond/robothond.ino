@@ -12,6 +12,16 @@
 #define calib_speed_corrR   0  //if motors deviate, correct it
 #define calib_speed_corrL   0  //if motors deviate, correct it
 
+//robots
+#define SAYA    0
+#define GUDRUN  1
+#define THIEMEN 2
+#define JASPER  3
+#define BLSTEF  4
+#define STEF    5
+#define MLOUISE 6
+int ROBOT = MLOUISE;
+
 //new batteries
 #define newbat true
 
@@ -50,6 +60,12 @@ void setup(){
     SLOW_SPEED      = 160;         //a slow speed good for searching
     turn_correction =  30;
     search_turn_speed = 130;
+    if (ROBOT==THIEMEN)
+      {calib_max_speed = 160;
+      } else if (ROBOT=BLSTEF)
+      {calib_max_speed = 140;
+       calib_no_speed = 75;
+      }
   } else {
   //old batteries
     calib_max_speed = 255; //maximum value you want

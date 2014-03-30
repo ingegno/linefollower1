@@ -7,10 +7,10 @@
 #define trigPin 12
 #define echoPin 13
 
-#define motorlinksPWM 3
-#define motorlinksDir 2
-#define motorrechtsPWM 5
-#define motorrechtsDir 4
+#define motorrechtsPWM 3
+#define motorrechtsDir 2
+#define motorlinksPWM  5
+#define motorlinksDir  4
 
 bool test = true;   //zet op 0 om niet te debuggen,  1 in te debuggen!
 

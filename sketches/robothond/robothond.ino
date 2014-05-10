@@ -22,6 +22,8 @@ int ROBOT = SAYA;
 #define newbat true
 
 int calib_max_speed, calib_no_speed, SLOW_SPEED, search_turn_speed;
+//based on sensors an extra slowdown can be set, it will be substracted from the speed!
+int extra_slowdown=0;
 
 //callibration variables
 int calib_speed_corrR = 0;  //if motors deviate, correct it
@@ -121,7 +123,6 @@ void search_object(){
     switch (measure_distance(distance_object)) {
       case OBJECT_FAR:
       case OBJECT_NEAR:
-        motor_drive(-search_turn_speed,search_turn_speed);
       case OBJECT_COLLIDE:
         motor_drive(0,0);
         cont = false;
@@ -220,8 +221,8 @@ void motor_drive(int right_speed, int left_speed){
   if (right_speed != 0) {sgvr = abs(right_speed)/right_speed;}
   int sgvl = 1;
   if (left_speed != 0) {sgvl = abs(left_speed)/left_speed;}
-  int vr = abs(right_speed) + calib_speed_corrR;
-  int vl = abs(left_speed) + calib_speed_corrL;
+  int vr = abs(right_speed) - extra_slowdown + calib_speed_corrR;
+  int vl = abs(left_speed) - extra_slowdown + calib_speed_corrL;
   if (vr > calib_max_speed) {vr = calib_max_speed;}
   else if (vr<0) {vr = 0;}
   vr = vr * sgvr;
@@ -231,16 +232,16 @@ void motor_drive(int right_speed, int left_speed){
   
   if (right_speed>=0){
     digitalWrite(motorrechtsDir, LOW); //vooruit
-    analogWrite(motorrechtsPWM, right_speed);
+    analogWrite(motorrechtsPWM, vr);
   } else {
     digitalWrite(motorrechtsDir, HIGH); //achteruit
-    analogWrite(motorrechtsPWM, 255+right_speed);
+    analogWrite(motorrechtsPWM, 255+vr);
   }
   if (left_speed>=0){
     digitalWrite(motorlinksDir, LOW); //vooruit
-    analogWrite(motorlinksPWM, left_speed);
+    analogWrite(motorlinksPWM, vl);
   } else {
     digitalWrite(motorlinksDir, HIGH); //achteruit
-    analogWrite(motorlinksPWM, 255+left_speed);
+    analogWrite(motorlinksPWM, 255+vl);
   }
 }

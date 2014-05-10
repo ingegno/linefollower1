@@ -20,12 +20,15 @@
 #define BLSTEF  4
 #define STEF    5
 #define MLOUISE 6
-int ROBOT = MLOUISE;
+int ROBOT = SAYA;
 
 //new batteries
 #define newbat true
 
-int calib_max_speed, calib_no_speed, SLOW_SPEED;
+int calib_max_speed, calib_no_speed, SLOW_SPEED, search_turn_speed;
+//based on sensors an extra slowdown can be set, it will be substracted from the speed!
+int extra_slowdown=0;
+unsigned long slowdown_start = 0UL;
 
 // afstandsmeting
 #define trigPin 12
@@ -40,29 +43,9 @@ bool test=false;
 
 int black[2]  = {600,1100}; // hiertussen zouden de waarden voor zwart moeten zijn
 int white[2]  = { 0, 500};
-
-
-//Saya  robot
-//int corrwhite[5] = {0, 0, 0, 100, 200};
-//int corrblack[5] = {0, 50, 0, 20, 50};
-//Gudrun robot
-//int corrwhite[5] = {0, 0, 50, 0, 0};
-//int corrblack[5] = {0, -10, 20, 0, 0};
-//Thiemen robot
-//int corrwhite[5] = {0, 0, 0, 0, 0};
-//int corrblack[5] = {0, 70, 50, 30, 40};
-//Jasper robot
-//int corrwhite[5] = {100, 0, 0, 0, 100};
-//int corrblack[5] = {0, 0, 0, 0, 0};
-//Blonde stef robot
-//int corrwhite[5] = {40, 0, 0, 0, 0};
-//int corrblack[5] = {40, 0, 0, 0, 0};
-// stef robot
-//int corrwhite[5] = {0, 0, 100, 0, 0};
-//int corrblack[5] = {0, 0, 0, 0, 0};
-// marie-louise robot
-int corrwhite[5] = {0, 100, 0, 0, 40};
-int corrblack[5] = {0, 0, 0, 0, 0};
+// correction callibration
+int corrwhite[5] = {0,0,0,0,0};
+int corrblack[5] = {0,0,0,0,0};
 
 // Wat kunnen we zien met 5 sensoren van lijnsensor?
 #define LS_UNKNOWN    0 // we kunnen niet bepalen wat we zien
@@ -87,7 +70,7 @@ float min_err = 0.5 * SCHAAL_FOUT;
 long error_value;
 
 // Array om de 5 sensorlezingen in op te slaan
-long sensors[] = {0, 0, 0, 0, 0};
+long sensors[5] = {0, 0, 0, 0, 0};
 
 //enkele extra variabelen
 // hoeveel verschil moet er zijn tussen grootste en kleinste waarden 
@@ -105,6 +88,7 @@ int stop_afstand = 5; // stopt aan 10 cm
 float distance_object;
 
 bool onsearchfield = false;
+unsigned long prevtimewhitefield = 0UL;
 bool finished = false;
 #define NO_OBJECT      0
 #define OBJECT_FAR     1
@@ -118,6 +102,7 @@ void setup(){
     calib_no_speed  =  110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 120;         //a slow speed good for searching
     turn_correction =  40;
+    search_turn_speed = 100;
     if (ROBOT==THIEMEN)
       {calib_max_speed = 160;
       } else if (ROBOT=BLSTEF)
@@ -130,12 +115,35 @@ void setup(){
     calib_no_speed  = 110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 200;         //a slow speed good for searching
     turn_correction =   0;
+    search_turn_speed = 220;
   }
   if (ROBOT == THIEMEN){
     black[0] = 700;
   } else if (ROBOT == JASPER){
     black[0] = 700;
     white[1] = 600;
+  }
+  if (ROBOT == SAYA){
+    corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=100;corrwhite[4]=200;
+    corrblack[0]=0;corrblack[1]=50;corrblack[2]=0;corrblack[3]=20;corrblack[4]=50;
+  } else if (ROBOT == GUDRUN){
+    corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=50;corrwhite[3]=0;corrwhite[4]=0;
+    corrblack[0]=0;corrblack[1]=-10;corrblack[2]=20;corrblack[3]=0;corrblack[4]=0;
+  } else if (ROBOT == THIEMEN){
+    corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=0;
+    corrblack[0]=0;corrblack[1]=70;corrblack[2]=50;corrblack[3]=30;corrblack[4]=40;
+  } else if (ROBOT == JASPER){
+    corrwhite[0]=100;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=100;
+    corrblack[0]=0;corrblack[1]=0;corrblack[2]=0;corrblack[3]=0;corrblack[4]=0;
+  } else if (ROBOT == BLSTEF){
+    corrwhite[0]=40;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=0;
+    corrblack[0]=40;corrblack[1]=0;corrblack[2]=0;corrblack[3]=0;corrblack[4]=0;
+  } else if (ROBOT == STEF){
+    corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=100;corrwhite[3]=0;corrwhite[4]=0;
+    corrblack[0]=0;corrblack[1]=0;corrblack[2]=0;corrblack[3]=0;corrblack[4]=0;
+  } else if (ROBOT == MLOUISE){
+    corrwhite[0]=0;corrwhite[1]=100;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=40;
+    corrblack[0]=0;corrblack[1]=0;corrblack[2]=0;corrblack[3]=0;corrblack[4]=0;
   }
   if (test) {
     Serial.begin(9600);
@@ -150,10 +158,13 @@ void setup(){
   pinMode(motorrechtsDir, OUTPUT);
 }
 
-void loop(){ 
+void loop(){
+  //unset slowdown if longer than 4 sec
+  if (extra_slowdown > 0 && (millis()-slowdown_start > 4000UL)) {
+    extra_slowdown = 0;
+  }
   //Reads sensor values and computes sensor sum and weighted average
   int nrseen = 0;
-  unsigned long prevtimewhitefield = 0UL;
   int lineseen = sensors_read();
   onsearchfield = false;
   switch (lineseen) {
@@ -181,7 +192,7 @@ void loop(){
       if (test) {
         Serial.println("white line !!!");
       }
-      if (millis() - prevtimewhitefield < 1000UL) {
+      if (millis() - prevtimewhitefield < 1500UL) {
         //really on white field
         motor_drive(0,0);
         onsearchfield = true;
@@ -194,6 +205,8 @@ void loop(){
         delay(500);
         motor_drive(0,0);
         delay(100);
+        // slow down before continuing
+        extra_slowdown = SLOW_SPEED + (calib_max_speed-SLOW_SPEED)/2;
       }
 //      //we do three repeats
 //      for (int seeagain=0; seeagain<3; seeagain++) {
@@ -334,7 +347,7 @@ void search_object(){
       }
   //delay(1000);
   //now rotate and scan
-  motor_drive(-220,220);
+  motor_drive(-search_turn_speed,search_turn_speed);
   bool cont = true;
   while (cont) {
     switch (measure_distance(distance_object)) {
@@ -494,8 +507,8 @@ void motor_drive(int right_speed, int left_speed){
   if (right_speed != 0) {sgvr = abs(right_speed)/right_speed;}
   int sgvl = 1;
   if (left_speed != 0) {sgvl = abs(left_speed)/left_speed;}
-  int vr = abs(right_speed) + calib_speed_corrR;
-  int vl = abs(left_speed) + calib_speed_corrL;
+  int vr = abs(right_speed) - extra_slowdown + calib_speed_corrR;
+  int vl = abs(left_speed) - extra_slowdown + calib_speed_corrL;
   if (vr > calib_max_speed) {vr = calib_max_speed;}
   else if (vr<0) {vr = 0;}
   vr = vr * sgvr;
@@ -505,16 +518,16 @@ void motor_drive(int right_speed, int left_speed){
   
   if (right_speed>=0){
     digitalWrite(motorrechtsDir, LOW); //vooruit
-    analogWrite(motorrechtsPWM, right_speed);
+    analogWrite(motorrechtsPWM, vr);
   } else {
     digitalWrite(motorrechtsDir, HIGH); //achteruit
-    analogWrite(motorrechtsPWM, 255+right_speed);
+    analogWrite(motorrechtsPWM, 255+vr);
   }
   if (left_speed>=0){
     digitalWrite(motorlinksDir, LOW); //vooruit
-    analogWrite(motorlinksPWM, left_speed);
+    analogWrite(motorlinksPWM, vl);
   } else {
     digitalWrite(motorlinksDir, HIGH); //achteruit
-    analogWrite(motorlinksPWM, 255+left_speed);
+    analogWrite(motorlinksPWM, 255+vl);
   }
 }

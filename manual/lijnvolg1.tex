@@ -82,8 +82,17 @@ We gebruiken een mini-schakelbord om correct stroom te leveren. Gebruik een kant
 \end{figure}
 
 \subsection{\engt{Construction} \nedt{Constructie}}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=9cm]{pic/robotteam2.jpg}
+\caption{\engt{Ingegno line following robots}
+\nedt{Ingegno lijnvolg robots}}
+\label{f:ingrobots2}
+\end{figure}
+
 \eng{TODO}
-\ned{Je weet wat er op je robot moet komen, en kunt dus nu een eigen constructie maken uit materiaal die je hebt liggen. Voorbeelden zie je in Figuur TODO. 
+\ned{Je weet wat er op je robot moet komen, en kunt dus nu een eigen constructie maken uit materiaal die je hebt liggen. Voorbeelden zie je in Figuur \ref{f:ingrobots2}. 
 
 Wil je optimaal werken, dan kun je een frame laten laseren in een fablab in de buurt. Je kan ontwerpfiles vinden in de map \url{https://github.com/ingegno/linefollower1/blob/master/frames/}. Wij zullen frame \textbf{basic} gebruiken. Alle stukken van basic zie je in Figuur \ref{f:frame_basic}, alsook de finale vorm. Voor de stevigheid gebruik je best ook lijm. Dit kan met houtlijm , of, veel gemakkelijker, met een lijmpistool.
 }
@@ -328,12 +337,19 @@ De code kan gevonden worden in \ref{c:l4_c}.
 
 In de code zullwen we dus in het geval van \ardo{case LS\_WHITEFIELD:}, code uitvoeren om dit te bereiken. Gezien onze code in de loop de lijn probeert te lezen, en we nu iets anders moeten doen dat vastligt (zoeken, bewegen naar, en dan wegduwen), doen we alles zonder gebruik te maken van de Arduino loop. Met andere woorden, we gebruiken de \ardo{while (allesok)} constructie om acties te laten voortduren tot we een gewenst resultaat hebben.
 
-De veranderingen kunnen gevonden worden in \ref{c:l5_c}.
+De veranderingen kunnen gevonden worden in  \url{https://github.com/ingegno/linefollower1/blob/master/sketches/linefollow_search_push/linefollow_search_push.ino}. Specifiek is het nodig om zeker te zijn dat we op het witte veld zijn. We willen immers niet te vroeg beginnen met zoeken. Indien ok, voeren we drie functies uit: \ardo{search_object();}, \ardo{move_to_object();}, and \ardo{push_object();}. Deze functies doen precies wat ze zeggen: ronddraaien om blik te zoeken. Zodra gevonden, bewegen naar het object, en uiteindelijk het een eind duwen zodat het buiten het veld komt.
 }
 
-\begin{code}\label{c:l5_c}
- \ \newline
-\inputard{\string"../sketches/calib_search_push_object/calib_search_push_object.ino\string"}{59}{75}
- \ \newline
-\inputard{\string"../sketches/calib_search_push_object/calib_search_push_object.ino\string"}{163}{321}
-\end{code}
+
+\section{\engt{Extra: Robot dog} \nedt{Extra: Robothond}}
+\eng{TODO}
+\ned{Voor de lijnvolg robot moet je altijd een lijn hebben om het te tonen aan de mensen. We hebben eerder al een voorgeprogrammeerd parcours als oefening gedaan, dus ook dat kun je als demonstratie gebruiken. Met onze robot kunnen we nog iets anders doen: een robothond maken die je overal volgt.
+
+Het idee is als volgt: onze robot zoekt zoals in de laatste les naar het object in zijn buurt, en rijdt er dan naartoe. Als object beweegt zoekt hij opnieuw. We hergebruiken dus verschillende elementen die we reeds eerder tegenkwamen.
+
+Belangrijkste aspect in dit programma is opgeven tot op welke afstand gekeken moet worden. We doen dit nu tot op 40cm. Doe dus testen in een open ruimte waar muren of stoelen verder zullen staan!
+
+De code vind je op \url{https://github.com/ingegno/linefollower1/blob/master/sketches/calib_forward_line_follow_extend/calib_forward_line_follow_extend.ino}.
+
+Veel succes!
+}

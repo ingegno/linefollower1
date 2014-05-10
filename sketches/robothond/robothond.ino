@@ -8,10 +8,6 @@
 #define motorlinksPWM  5
 #define motorlinksDir  4
 
-//callibration variables
-#define calib_speed_corrR   0  //if motors deviate, correct it
-#define calib_speed_corrL   0  //if motors deviate, correct it
-
 //robots
 #define SAYA    0
 #define GUDRUN  1
@@ -20,12 +16,16 @@
 #define BLSTEF  4
 #define STEF    5
 #define MLOUISE 6
-int ROBOT = MLOUISE;
+int ROBOT = SAYA;
 
 //new batteries
 #define newbat true
 
 int calib_max_speed, calib_no_speed, SLOW_SPEED, search_turn_speed;
+
+//callibration variables
+int calib_speed_corrR = 0;  //if motors deviate, correct it
+int calib_speed_corrL = 0;  //if motors deviate, correct it
 
 // afstandsmeting
 #define trigPin 12
@@ -33,13 +33,13 @@ int calib_max_speed, calib_no_speed, SLOW_SPEED, search_turn_speed;
 
 bool test=false;
 
-int speed_corr;
+//int speed_corr;
 int right_speed;
 int left_speed;
 int turn_correction;
 
 //afstand in cm die we onderzoeken voor baasje, verder zien we niet!
-int max_zichtbare_afstand = 40; 
+int max_zichtbare_afstand = 60; 
 // wanneer stoppen?
 int stop_afstand = 5; // stopt aan 5 cm
 float distance_object;
@@ -59,13 +59,17 @@ void setup(){
     calib_no_speed  =  100; //lowest value that motors don't move anymore
     SLOW_SPEED      = 160;         //a slow speed good for searching
     turn_correction =  30;
-    search_turn_speed = 130;
+    search_turn_speed = 100;
     if (ROBOT==THIEMEN)
       {calib_max_speed = 160;
-      } else if (ROBOT=BLSTEF)
+      } else if (ROBOT==BLSTEF)
       {calib_max_speed = 140;
        calib_no_speed = 75;
       }
+    if (ROBOT==SAYA) {
+      calib_speed_corrR =  -20;  //if motors deviate, correct it
+      calib_speed_corrL =  20 ; //if motors deviate, correct it
+    }
   } else {
   //old batteries
     calib_max_speed = 255; //maximum value you want
@@ -112,9 +116,12 @@ void search_object(){
   motor_drive(-search_turn_speed,search_turn_speed);
   bool cont = true;
   while (cont) {
+    delay(1000);
+    motor_drive(0,0);
     switch (measure_distance(distance_object)) {
       case OBJECT_FAR:
       case OBJECT_NEAR:
+        motor_drive(-search_turn_speed,search_turn_speed);
       case OBJECT_COLLIDE:
         motor_drive(0,0);
         cont = false;

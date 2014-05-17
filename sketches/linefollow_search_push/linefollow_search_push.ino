@@ -20,7 +20,7 @@
 #define BLSTEF  4
 #define STEF    5
 #define MLOUISE 6
-int ROBOT = SAYA;
+int ROBOT = BLSTEF;
 
 //new batteries
 #define newbat true
@@ -86,6 +86,7 @@ int max_zichtbare_afstand = 55; //afstand in cm die we onderzoeken, verder zien 
 // wanneer stoppen?
 int stop_afstand = 5; // stopt aan 10 cm
 float distance_object;
+bool invert_search_dir = false;
 
 bool onsearchfield = false;
 unsigned long prevtimewhitefield = 0UL;
@@ -105,9 +106,15 @@ void setup(){
     search_turn_speed = 100;
     if (ROBOT==THIEMEN)
       {calib_max_speed = 160;
-      } else if (ROBOT=BLSTEF)
+      } else if (ROBOT==BLSTEF)
       {calib_max_speed = 140;
        calib_no_speed = 75;
+      } else if (ROBOT==MLOUISE)
+      {calib_max_speed = 130;
+       calib_no_speed = 90;
+      } else if (ROBOT==JASPER)
+      {calib_max_speed = 170;
+       calib_no_speed = 100;
       }
   } else {
   //old batteries
@@ -142,7 +149,8 @@ void setup(){
     corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=100;corrwhite[3]=0;corrwhite[4]=0;
     corrblack[0]=0;corrblack[1]=0;corrblack[2]=0;corrblack[3]=0;corrblack[4]=0;
   } else if (ROBOT == MLOUISE){
-    corrwhite[0]=0;corrwhite[1]=100;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=40;
+    invert_search_dir = true;
+    corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=100;corrwhite[4]=40;
     corrblack[0]=0;corrblack[1]=0;corrblack[2]=0;corrblack[3]=0;corrblack[4]=0;
   }
   if (test) {
@@ -347,7 +355,11 @@ void search_object(){
       }
   //delay(1000);
   //now rotate and scan
-  motor_drive(-search_turn_speed,search_turn_speed);
+  if (invert_search_dir) {
+    motor_drive(search_turn_speed,-search_turn_speed);
+  } else {
+    motor_drive(-search_turn_speed,search_turn_speed);
+  }
   bool cont = true;
   while (cont) {
     switch (measure_distance(distance_object)) {

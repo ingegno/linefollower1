@@ -30,7 +30,7 @@ int white[2]  = {  0, 500};
 //int corrwhite[5] = {0, 0, 100, 0, 0};
 //int corrblack[5] = {0, 0, 0, 0, 0};
 // marie-louise robot
-int corrwhite[5] = {0, 100, 0, 0, 40};
+int corrwhite[5] = {0, 0, 0, 100, 40};
 int corrblack[5] = {0, 0, 0, 0, 0};
 
 

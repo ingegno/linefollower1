@@ -20,7 +20,7 @@
 #define BLSTEF  4
 #define STEF    5
 #define MLOUISE 6
-int ROBOT = BLSTEF;
+int ROBOT = SAYA;
 
 //new batteries
 #define newbat true
@@ -214,7 +214,7 @@ void loop(){
         motor_drive(0,0);
         delay(100);
         // slow down before continuing
-        extra_slowdown = SLOW_SPEED + (calib_max_speed-SLOW_SPEED)/2;
+        extra_slowdown = (calib_max_speed - SLOW_SPEED)/2;
       }
 //      //we do three repeats
 //      for (int seeagain=0; seeagain<3; seeagain++) {

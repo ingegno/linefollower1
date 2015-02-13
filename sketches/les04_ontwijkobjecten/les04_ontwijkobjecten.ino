@@ -16,6 +16,8 @@ DistSens distsens;
 // waarde in percenten -100 .. 100
 int servL = 0;
 int servR = 0;
+#define servoLpin 9
+#define servoRpin 10
 
 // bijhouden tijd
 unsigned long timesec,   timesecbegin  =0UL;
@@ -25,7 +27,6 @@ unsigned long timemicro, timemicrobegin=0UL;
 // alles rond afstand:
 #define trigPin 12
 #define echoPin 13
-
 //maximum afstand in cm die we willen zien
 #define MAX_AFSTAND 50.
 //minimum afstand die sensor kan zien in cm
@@ -33,29 +34,31 @@ unsigned long timemicro, timemicrobegin=0UL;
 //variabelen om mee te rekenen
 float afstand=0;
 
-//unsigned char echoval;
-
 //andere variabelen
 int munt=0;
 
 void setup() {
-  distsens.attach(trigPin, echoPin);            //pins dist sensor
-  distsens.setMinMax(MIN_AFSTAND, MAX_AFSTAND); //afstanden te zien zetten
-  servo1.attach( 9);  // connecteer servo op pin  9
-  servo2.attach(10);  // connecteer servo op pin 10 
-  set_servos(servL, servR);
-  dotime();
+  distsens.attach(trigPin, echoPin);
+  distsens.setMinMax(MIN_AFSTAND, MAX_AFSTAND);
+  servo1.attach(servoLpin);
+  servo2.attach(servoRpin);
+  set_servos(servL, servR); //startsnelheid
+  dotime();                 //tijd bijhouden
   randomSeed(analogRead(0));
 }
 
 void loop() {
   dotime();
+  // gebruik hier een van de afstandsmeting methoden
+  //afstand = distsens.distSimple();
   //afstand = distsens.distTimeout();
   afstand = distsens.distNoblock();
   if (afstand == 0) {
+    //niets te zien, rij voorruit
     vooruit();
     munt = random(2);
   } else if (afstand < 10) {
+    //iets voor onze neus, hard draaien
     if (munt == 0) { linkshard();
     } else {         rechtshard();
     }

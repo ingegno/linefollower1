@@ -9,7 +9,7 @@
 \eng{todo}
 \ned{Volgende code bevat hoe je de Servo motoren kunt controleren. De eerste sketch toont hoe je precies een Servo definieert in Arduino code, en hoe je opdrachten ernaar stuurt.}
 
-\begin{code}[les01\_servo.ino]\label{c:a2_servo}
+\begin{code}[les01\_servo.ino]\label{c:a1_servo}
  \ \newline
 \inputardfull{\string"../sketches/les01_servo/les01_servo.ino\string"}
 \end{code}
@@ -17,7 +17,7 @@
 \eng{todo}
 \ned{Doe wat testen met bovenstaande code. Het is voor het verdere verloop belangrijk dat je functionaliteit van je robot opsplitst in deeltjes die apart niet moeilijk zijn om te verstaan. Zo hou je overzicht over het geheel. Onze volgende code herschrijft het aansturen van de servo motoren in zo'n codeblokjes, welke we functies noemen: je krijgt input, je doet daar iets mee, en dan eindig je.}
 
-\begin{code}[les02\_servo\_functies]\label{c:a2_servo}
+\begin{code}[les02\_servo\_functies]\label{c:a2_servof}
  \ \newline
 \inputardfull{\string"../sketches/les02_servo_functies/les02_servo_functies.ino\string"}
 \end{code}
@@ -26,9 +26,39 @@
 \eng{todo}
 \ned{Volgende code bevat een eenvoudige en een iets vluggere, maar moeilijkere, methode om de afstand tot een object te bepalen. Met een basiskennis Arduino kun je de code lezen. De workshop begeleider om raad vragen bij problemen!}
 
-\begin{code}[les03\_afstandsensor.ino]\label{c:a1_distsens}
+\begin{code}[les03\_afstandsensor.ino]\label{c:a3_distsens}
  \ \newline
 \inputardfull{\string"../sketches/les03_afstandsensor/les03_afstandsensor.ino\string"}
+\end{code}
+
+\eng{todo}
+\ned{De afstandssensor heb je getest, en je begrijpt hoe hij werkt. We hebben een bibliotheek geschreven om gemakkelijk met afstandssensoren te werken: DistSens.h. Maak een nieuwe sketch die die de bibliotheek gebruikt om de afstand te bekomen. Je dient het bestand DistSens.h in dezelfde folder op te slaan als je sketch (.ino bestand). 
+
+De bibliotheek heeft volgende handleiding: 
+
+Een afstandssensor wordt geactiveerd door een instantie van de \ardo{DistSens} klasse te maken, en de trigger en echo pin door te geven via de \ardo{attach()} methode. Je kan daarna de afstand op verschillende manieren opvragen. 
+}
+\nedt{
+De methodes van een DistSens object zijn: 
+\begin{itemize}
+ \item \ardo{attach(pintrig, pinecho)} -  Welke pinnen gebruiken
+ \item \ardo{stop()} - deactiveer, alle afstanden zullen 0 teruggeven
+ \item \ardo{start()} - activeer terug na deactivering
+ \item \ardo{setMinMax(min, max)} - Geef minimum en maximum afstand om te meten. Default: 3.5cm en 50cm
+ \item \ardo{setResolution(res)} - Zet laagste interval waarna opnieuw meten afstand toegelaten is. Default = 250000UL = 250 millisec = 1/4 sec. \newline
+ Een meting voor dit interval afgelopen is zal de vorige gemeten afstand teruggeven.
+ \item \ardo{distSimple()} - afstandsmeting die je sketch blokkeert tot meting gedaan is, wat een ongekende hoeveelheid tijd is.
+ \item \ardo{distTimeout()} - afstandsmeting die je sketch blokkeert voor maximaal te tijd nodig om de max afstand doorgegeven met \ardo{setMinMax} te metn + 1ms. Deze tijd is 
+ 2*max/(speed of sound) + 1
+ \item \ardo{distNoblock()} - afstandsmeting die altijd een waarde teruggeeft in minder dan 1 milliseconde. De laatst gedane meting wordt teruggegeven zolang geen nieuwe meting be\"eindigt is. Deze method geeft enkele correcte resultaten als het opgeroepen wordt vanuit een \ardo{loop()} functie van je Arduino die niet van \ardo{delay()} gebruik maakt. Gebruik deze methode als je verschillende sensoren hebt om op te reageren en je niet wil dat de afstandssensor de reactie blokkeert (PS: wil je nog beter, gebruik dan interrupts, dit zit niet in deze bibliotheek).
+\end{itemize}
+
+Een voorbeeld van gebruik van deze bibliotheek is je autorobot met servo's en een afstandsensor een hindernissen parcours laten afwerken: rij door een kamer zonder ergens tegen te botsen!
+}
+
+\begin{code}[les04\_ontwijkobjecten.ino]\label{c:a4_distsens}
+ \ \newline
+\inputardfull{\string"../sketches/les04_ontwijkobjecten/les04_ontwijkobjecten.ino\string"}
 \end{code}
 
 

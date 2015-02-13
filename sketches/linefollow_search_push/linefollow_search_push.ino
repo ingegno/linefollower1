@@ -9,8 +9,8 @@
 #define motorlinksDir  4
 
 //callibration variables
-#define calib_speed_corrR   0  //if motors deviate, correct it
-#define calib_speed_corrL   0  //if motors deviate, correct it
+int calib_speed_corrR = 0;  //if motors deviate, correct it
+int calib_speed_corrL = 0;  //if motors deviate, correct it
 
 //robots
 #define SAYA    0
@@ -23,7 +23,7 @@
 int ROBOT = SAYA;
 
 //new batteries
-#define newbat true
+#define newbat false
 
 int calib_max_speed, calib_no_speed, SLOW_SPEED, search_turn_speed;
 //based on sensors an extra slowdown can be set, it will be substracted from the speed!
@@ -33,6 +33,12 @@ unsigned long slowdown_start = 0UL;
 // afstandsmeting
 #define trigPin 12
 #define echoPin 13
+//speed of sound in air in cm/micros
+#define SPEED_SOUND 0.034
+//the max distance in cm we want to measure
+#define MAX_DIST 70.
+//timeout to wait for echo pulse in microseconds
+unsigned long timeout_echo = (2* MAX_DIST+1) / SPEED_SOUND;
 
 bool test=false;
 
@@ -81,6 +87,10 @@ int speed_corr;
 int right_speed;
 int left_speed;
 int turn_correction;
+int backward_speed;
+unsigned long backward_time;   //ms to drive backward
+int corr_pushL, corr_pushR;
+
 
 int max_zichtbare_afstand = 55; //afstand in cm die we onderzoeken, verder zien we niet!
 // wanneer stoppen?
@@ -103,35 +113,51 @@ void setup(){
     calib_no_speed  =  110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 120;         //a slow speed good for searching
     turn_correction =  40;
+    calib_speed_corrR = 0;  //if motors deviate, correct it
+    calib_speed_corrL = 0; //if motors deviate, correct it
+    corr_pushL = 0;
+    corr_pushR = 0;
     search_turn_speed = 100;
+    backward_speed = -calib_max_speed+turn_correction;
+    backward_time = 500UL;
     if (ROBOT==THIEMEN)
-      {calib_max_speed = 160;
+      {calib_max_speed = 150;
       } else if (ROBOT==BLSTEF)
       {calib_max_speed = 140;
        calib_no_speed = 75;
       } else if (ROBOT==MLOUISE)
       {calib_max_speed = 130;
        calib_no_speed = 90;
+       turn_correction =  40;
+       backward_speed = -80;
       } else if (ROBOT==JASPER)
-      {calib_max_speed = 170;
+      {calib_max_speed = 130;
+       search_turn_speed = 140;
+       calib_no_speed = 80;
+       backward_time = 300UL;
+       corr_pushL=20;
+      }else if (ROBOT==SAYA)
+      {calib_max_speed = 140;
        calib_no_speed = 100;
-      }
+       calib_speed_corrR = -10;
+      };
   } else {
   //old batteries
-    calib_max_speed = 255; //maximum value you want
+    calib_max_speed = 240; //maximum value you want
     calib_no_speed  = 110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 200;         //a slow speed good for searching
     turn_correction =   0;
     search_turn_speed = 220;
+    backward_speed = -calib_max_speed+turn_correction;
   }
   if (ROBOT == THIEMEN){
     black[0] = 700;
   } else if (ROBOT == JASPER){
     black[0] = 700;
-    white[1] = 600;
+    white[1] = 400;
   }
   if (ROBOT == SAYA){
-    corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=100;corrwhite[4]=200;
+    corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=20;corrwhite[4]=190;
     corrblack[0]=0;corrblack[1]=50;corrblack[2]=0;corrblack[3]=20;corrblack[4]=50;
   } else if (ROBOT == GUDRUN){
     corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=50;corrwhite[3]=0;corrwhite[4]=0;
@@ -140,7 +166,10 @@ void setup(){
     corrwhite[0]=0;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=0;
     corrblack[0]=0;corrblack[1]=70;corrblack[2]=50;corrblack[3]=30;corrblack[4]=40;
   } else if (ROBOT == JASPER){
-    corrwhite[0]=100;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=100;
+    invert_search_dir = false;
+    //corrwhite[0]=100;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=100;
+    //corrblack[0]=0;corrblack[1]=0;corrblack[2]=0;corrblack[3]=0;corrblack[4]=0;
+    corrwhite[0]=30;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=0;
     corrblack[0]=0;corrblack[1]=0;corrblack[2]=0;corrblack[3]=0;corrblack[4]=0;
   } else if (ROBOT == BLSTEF){
     corrwhite[0]=40;corrwhite[1]=0;corrwhite[2]=0;corrwhite[3]=0;corrwhite[4]=0;
@@ -209,8 +238,8 @@ void loop(){
         prevtimewhitefield = millis();
         motor_drive(0,0);
         delay(100);
-        motor_drive(-calib_max_speed+turn_correction, -calib_max_speed+turn_correction);
-        delay(500);
+        motor_drive(backward_speed, backward_speed);
+        delay(backward_time);
         motor_drive(0,0);
         delay(100);
         // slow down before continuing
@@ -382,7 +411,7 @@ int measure_distance(float &distance){
   delayMicroseconds(1000);
   digitalWrite(trigPin, LOW);
   // berekenen afstand in cm (test dit en pas breuk aan als nodig!
-  duration = pulseIn(echoPin, HIGH);
+  duration = pulseIn(echoPin, HIGH, timeout_echo);
   //Merk op: Out of range == 0 cm!
   distance = (duration/2) / 29.1;
   if (test) {
@@ -426,8 +455,8 @@ void move_to_object(){
         //motor_drive(0, 0);
         break;
       case OBJECT_COLLIDE:
-        motor_drive(0, 0);
-        cont=false;
+        motor_drive(SLOW_SPEED, SLOW_SPEED);
+        cont=true;
         break;
     }
     // test if still WHITEFIELD !
@@ -455,7 +484,7 @@ void push_object(){
   int pos_obj = measure_distance(distance_object);
   if (pos_obj == OBJECT_COLLIDE) {
     //we drive forward slowly for 7 sec?
-    motor_drive(calib_max_speed, calib_max_speed);
+    motor_drive(calib_max_speed+corr_pushL, calib_max_speed+corr_pushR);
     delay(8000);
     motor_drive(calib_max_speed,-calib_max_speed);
     delay(2000);

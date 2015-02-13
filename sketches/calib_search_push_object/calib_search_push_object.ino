@@ -20,7 +20,7 @@
 #define BLSTEF  4
 #define STEF    5
 #define MLOUISE 6
-int ROBOT = MLOUISE;
+int ROBOT = JASPER;
 
 //new batteries
 #define newbat true

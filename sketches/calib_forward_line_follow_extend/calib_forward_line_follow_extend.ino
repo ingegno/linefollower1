@@ -20,7 +20,7 @@
 #define BLSTEF  4
 #define STEF    5
 #define MLOUISE 6
-int ROBOT = MLOUISE;
+int ROBOT = SAYA;
 
 //new batteries
 #define newbat true
@@ -96,7 +96,7 @@ int turn_correction;
   
 void setup(){
   if (newbat) {
-    calib_max_speed = 180; //maximum value you want
+    calib_max_speed = 220; //180; //maximum value you want
     calib_no_speed  =  110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 120;         //a slow speed good for searching
     turn_correction =  40;
@@ -108,7 +108,7 @@ void setup(){
       }
   } else {
   //old batteries
-    calib_max_speed = 255; //maximum value you want
+    calib_max_speed = 240; //maximum value you want
     calib_no_speed  = 110; //lowest value that motors don't move anymore
     SLOW_SPEED      = 200;         //a slow speed good for searching
     turn_correction =   0;

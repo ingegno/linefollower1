@@ -4,12 +4,16 @@ This sketch to calibrate forward movement.
 */
 
 // typ hier de aansluitingen van de motordriver, voor de twee motors
-#define motorrechtsPWM 3
-#define motorrechtsDir 2
-#define motorlinksPWM  5
-#define motorlinksDir  4
+#define motorrechtsin3 4
+#define motorrechtsin4 2
+#define motorrechtsenableB 3
 
-bool test=true;
+#define motorlinksin1  5
+#define motorlinksin2  7
+#define motorlinksenableA 6
+
+
+bool test=false;
 
 //callibration variables
 #define calib_speed_corrR   0  //if motors deviate, correct it
@@ -28,8 +32,8 @@ int left_speed;
 
 void setup(){
   if (newbat) {
-    calib_max_speed = 150; //maximum value you want
-    calib_no_speed  =  110; //lowest value that motors don't move anymore
+    calib_max_speed = 180; //maximum value you want
+    calib_no_speed  =  70; //lowest value that motors don't move anymore
   } else {
   //old batteries
     calib_max_speed = 255; //maximum value you want
@@ -40,10 +44,14 @@ void setup(){
   if (test) {
     Serial.begin(9600);
   }
-  pinMode(motorlinksPWM, OUTPUT);
-  pinMode(motorlinksDir, OUTPUT);
-  pinMode(motorrechtsPWM, OUTPUT);
-  pinMode(motorrechtsDir, OUTPUT);
+  
+   pinMode( motorrechtsin3,OUTPUT);
+ pinMode(motorrechtsin4, OUTPUT);
+ pinMode(motorrechtsenableB,OUTPUT);
+
+ pinMode(motorlinksin1,OUTPUT);
+ pinMode( motorlinksin2, OUTPUT);
+ pinMode(motorlinksenableA,OUTPUT);
   
 }
 
@@ -103,19 +111,25 @@ void motor_drive(int right_speed, int left_speed){
   if (vl > calib_max_speed) {vl = calib_max_speed;}
   else if (vl<0) {vl = 0;}
   vl = vl * sgvl;
-  
+ 
   if (right_speed>=0){
-    digitalWrite(motorrechtsDir, LOW); //vooruit
-    analogWrite(motorrechtsPWM, right_speed);
+    
+    digitalWrite(motorrechtsin3, LOW); //vooruit
+    digitalWrite(motorrechtsin4, HIGH);
+    analogWrite(motorrechtsenableB, right_speed);
   } else {
-    digitalWrite(motorrechtsDir, HIGH); //achteruit
-    analogWrite(motorrechtsPWM, 255+right_speed);
+     digitalWrite(motorrechtsin3, HIGH); //achteruit
+    digitalWrite(motorrechtsin4, LOW);
+    analogWrite(motorrechtsenableB, right_speed);
   }
   if (left_speed>=0){
-    digitalWrite(motorlinksDir, LOW); //vooruit
-    analogWrite(motorlinksPWM, left_speed);
+    digitalWrite(motorlinksin1, LOW); //vooruit
+    digitalWrite(motorlinksin2, HIGH);
+    analogWrite(motorlinksenableA, right_speed);
   } else {
-    digitalWrite(motorlinksDir, HIGH); //achteruit
-    analogWrite(motorlinksPWM, 255+left_speed);
+     digitalWrite(motorlinksin1, HIGH); //achteruit
+    digitalWrite(motorlinksin2, LOW);
+    analogWrite(motorlinksenableA, right_speed);
   }
+  
 }

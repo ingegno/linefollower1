@@ -5,10 +5,12 @@
 /*  Hier rijden we en ontwijken we alle objecten.
 /******************************/
 
-#include <Servo.h> 
+#include <Servo.h>
+#include "DistSens.h"
  
 Servo servo1;
 Servo servo2;
+DistSens distsens;
 
 // positie servo's. Start: stilstaan 
 // waarde in percenten -100 .. 100
@@ -23,58 +25,33 @@ unsigned long timemicro, timemicrobegin=0UL;
 // alles rond afstand:
 #define trigPin 12
 #define echoPin 13
-//activeer afstand sensor of niet
-boolean GEBRUIK_AFSTAND = true;
-//snelheid van geluid in lucht in cm/micros
-#define SPEED_SOUND 0.034
+
 //maximum afstand in cm die we willen zien
 #define MAX_AFSTAND 50.
 //minimum afstand die sensor kan zien in cm
 #define MIN_AFSTAND 3.5
-//hoe vaak afstand meten in microseconds
-#define AFSTAND_MEAS_RESO 250000UL  //= 250 ms = 1/4s
-//berekenen hoe lang geluid nodig heeft in microseconds
-unsigned long timeout_echo = (2* MAX_AFSTAND+1) / SPEED_SOUND;
 //variabelen om mee te rekenen
-float afstand=0, oude_afstand=0;
-float afst;
-unsigned long laatste_afst_meas = 0UL;
-bool dotrig = false;
-bool inecholoc = false;
-bool pulseoutwait = false;
-unsigned long echodurationstart,echoduration;
+float afstand=0;
+
 //unsigned char echoval;
 
 //andere variabelen
 int munt=0;
 
 void setup() {
-  // zet seriele monitor via usb op om te testen (pin 0 en 1 vrij laten!)
-  //Serial.begin (9600);
-  setup_afstand_sensor();
-  setup_servos(); 
+  distsens.attach(trigPin, echoPin);            //pins dist sensor
+  distsens.setMinMax(MIN_AFSTAND, MAX_AFSTAND); //afstanden te zien zetten
+  servo1.attach( 9);  // connecteer servo op pin  9
+  servo2.attach(10);  // connecteer servo op pin 10 
+  set_servos(servL, servR);
   dotime();
   randomSeed(analogRead(0));
 }
 
-void setup_afstand_sensor() {
-  if (GEBRUIK_AFSTAND) {
-    // aansluitingen sensor
-    pinMode(trigPin, OUTPUT);
-    pinMode(echoPin, INPUT);
-  }
-  afstand=0; laatste_afst_meas=0UL;
-}
-
-void setup_servos() {
-  servo1.attach( 9);  // connecteer servo op pin  9
-  servo2.attach(10);  // connecteer servo op pin 10 
-  set_servos(servL, servR);
-}
-  
 void loop() {
   dotime();
-  afstand = meas_afst_noblock();
+  //afstand = distsens.distTimeout();
+  afstand = distsens.distNoblock();
   if (afstand == 0) {
     vooruit();
     munt = random(2);
@@ -86,80 +63,6 @@ void loop() {
     //vertraag tot aan 10cm
     set_servos(afstand/MAX_AFSTAND*100, afstand/MAX_AFSTAND*100);
   }
-  /*
-  if (timemilli % 3000 == 0) {
-     Serial.print("Afstand gemeten ... "); 
-     Serial.println(afstand); 
-  } */
-}
-
-/****  Functies hieronder  ****/
-float meas_afst_noblock(){
-  if (!GEBRUIK_AFSTAND) { return 0;}
-  bool updated_dist = false;
-  // measure afstand once every xx seconds
-  // 5 mogelijkheden:
-  //  1. nog niet nodig een nieuwe meting te doen
-  //  2. maak klaar om meting te doen
-  //  3. stuur commando om puls uit te sturen
-  //  4. controleer of puls uitgestuurd is
-  //  5. puls gestuurd, wacht op echo
-  if (timemicro-laatste_afst_meas < AFSTAND_MEAS_RESO){
-    // nog niet lang genoeg sinds vorige meting, niets doen
-    dotrig = true;
-    inecholoc = false;
-  } else if (!inecholoc && dotrig == true){
-    dotrig = false;
-    // read the afstand. Prepare to emit sound
-    digitalWrite(trigPin, HIGH);
-  } else if (!inecholoc && timemicro-laatste_afst_meas > AFSTAND_MEAS_RESO + 100UL){
-    //we waited long enough, determine new afstand, emit sound (8x40kHz pulses):
-    echodurationstart = micros();
-    digitalWrite(trigPin, LOW);
-    //catch echo, determine afstand
-    bool contwait = true;
-    while (contwait) {
-      //timing starts running when pin reads HIGH
-      //echoval = digitalRead(echoPin);
-      if (digitalRead(echoPin) == HIGH) {
-        //start timing
-        echodurationstart = micros();
-        contwait = false;
-        inecholoc = true;
-      } else if (micros() - echodurationstart > 800UL) {
-        //timeout, jump out of loop
-        contwait = false;
-        inecholoc = false;
-        echoduration = 0UL;
-        updated_dist = true;
-      }
-    }
-  } else if (inecholoc) {
-    //we are waiting for the echo, we test the echo pin
-    //echoval = digitalRead(echoPin);
-    //if we read LOW, timing ends
-    if (digitalRead(echoPin) == LOW) {
-      //echo received, new echoduration value
-      echoduration = timemicro-echodurationstart;
-      inecholoc = false;
-      updated_dist = true;
-    } else if (timemicro-echodurationstart > timeout_echo) {
-      echoduration = 0UL;
-      inecholoc = false;
-      updated_dist = true;
-    }
-  }
-  if (updated_dist) {
-    oude_afstand = afstand;
-    afstand = (echoduration/2.) * SPEED_SOUND;
-    if (afstand < MIN_AFSTAND || afstand > MAX_AFSTAND){
-      afstand = 0.;
-    }
-    oude_afstand = afstand;
-    //set time of this dist meas, so it does not happen again too fast
-    laatste_afst_meas = micros();
-  }
-  return afstand;
 }
 
 /* Opslaan van de tijd

@@ -51,17 +51,19 @@ void loop() {
   dotime();
   // gebruik hier een van de afstandsmeting methoden
   //afstand = distsens.distSimple();
-  //afstand = distsens.distTimeout();
-  afstand = distsens.distNoblock();
+  afstand = distsens.distTimeout();
+  //afstand = distsens.distNoblock(); //NEE. We hebben een delay!
   if (afstand == 0) {
     //niets te zien, rij voorruit
     vooruit();
     munt = random(2);
-  } else if (afstand < 10) {
+  } else if (afstand < 18) {
     //iets voor onze neus, hard draaien
     if (munt == 0) { linkshard();
     } else {         rechtshard();
     }
+    //minstens 2 seconde
+    delay(1500);
   } else {
     //vertraag tot aan 10cm
     set_servos(afstand/MAX_AFSTAND*100, afstand/MAX_AFSTAND*100);

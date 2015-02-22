@@ -63,7 +63,7 @@ void loop() {
     } else {         rechtshard();
     }
     //minstens 2 seconde
-    delay(1500);
+    delay(500);
   } else {
     //vertraag tot aan 10cm
     set_servos(afstand/MAX_AFSTAND*100, afstand/MAX_AFSTAND*100);

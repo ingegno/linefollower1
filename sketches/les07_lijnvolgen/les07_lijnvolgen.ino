@@ -39,9 +39,10 @@ float afstand=0;
 // alles rond lijnsensor
 // pas volgende aan voor aantal sensoren die je hebt. 
 // Hier voor twee sensoren, een links en een rechts
-#define ANALOGSENS false
-#define lijnLpin  2
-#define lijnRpin  3
+#define ANALOGSENS true
+#define POLULU false
+#define lijnLpin  2  // digital pin normaal, analog A2 als ANALOGSENS==true
+#define lijnRpin  3  // digital pin normaal, analog A3 als ANALOGSENS==true
 #define nrlijnpin 2
 int lijnpins[]  = {lijnLpin, lijnRpin};
 #define ZWART 0
@@ -124,16 +125,24 @@ void leeslijn()
 {
   for (int i=0;i<nrlijnpin;i++){
     if (ANALOGSENS) {
-      if (analogRead(lijnpins[i]) < 500) {
+      //lees analoog de lijn sensoren
+      // Calibreer grenswaarde van 700 !
+      int val = analogRead(lijnpins[i]);
+      Serial.print(" Reading analog ... ");Serial.println(val);
+      if ( val < 700) {
         //wit
-        lijnsens[i] = WIT;
+        lijnsens[i] = 1;
       } else {
         //wit
-        lijnsens[i] = ZWART;
+        lijnsens[i] = 0;
       };
     } else {
       //digitaal zwart of niets
-      lijnsens[i] = digitalRead(lijnpins[i]);
+      if (POLULU) {
+        lijnsens[i] = readQLDigital(lijnpins[i]);
+      } else {
+        lijnsens[i] = digitalRead(lijnpins[i]);
+      }
     }
   }
   verwerklijn();
@@ -245,5 +254,27 @@ void set_servos(int links, int rechts)
  void linkshard(int v)  {set_servos(  -(v+correctieL),    (v+correctieR)); }
  void rechtshard()      {set_servos( 100, -100); }
  void rechtshard(int v) {set_servos(   (v+correctieL),   -(v+correctieR)); }
- 
+
+int readQLDigital(int pin){
+  //Returns value from the QRE1113 Digital Polulu
+  //Lower numbers mean more refleacive
+  //More than 3000 means nothing was reflected.
+  pinMode( pin, OUTPUT );
+  digitalWrite( pin, HIGH );  
+  delayMicroseconds(10);
+  pinMode( pin, INPUT );
+
+  long time = micros();
+
+  //time how long the input is HIGH, but quit after 3ms as nothing happens after that
+  while (digitalRead(pin) == HIGH && micros() - time < 3000); 
+  int diff = micros() - time;
+
+  if (diff < 1000) {
+    return 1;
+  } else {
+    return 0;
+  }
+  //return diff;
+} 
 

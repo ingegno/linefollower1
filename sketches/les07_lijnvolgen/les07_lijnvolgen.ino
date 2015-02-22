@@ -202,6 +202,22 @@ void snellijnvolgen(){
     }
 }
 
+/* handige korte functies voor typische beweging
+ */
+ void vooruit()         {set_servos( 100,  100); }
+ void vooruit(int v)    {set_servos(   v+correctieL,    v+correctieR); }
+ void achteruit()       {set_servos(-100, -100); }
+ void achteruit(int v)  {set_servos(  -(v+correctieL),  -(v+correctieR)); }
+ void links()           {set_servos(   0,  100); }
+ void links(int v)      {set_servos(   0,    (v+correctieR)); }
+ void rechts()          {set_servos( 100,    0); }
+ void rechts(int v)     {set_servos(   (v+correctieL),    0); }
+ void stopauto()        {set_servos(   0,    0); }
+ void linkshard()       {set_servos(-100,  100); }
+ void linkshard(int v)  {set_servos(  -(v+correctieL),    (v+correctieR)); }
+ void rechtshard()      {set_servos( 100, -100); }
+ void rechtshard(int v) {set_servos(   (v+correctieL),   -(v+correctieR)); }
+ 
 /* Opslaan van de tijd
  */
 void dotime()
@@ -238,22 +254,6 @@ void set_servos(int links, int rechts)
     servR = rechts;
   }
 }
-
-/* handige korte functies voor typische beweging
- */
- void vooruit()         {set_servos( 100,  100); }
- void vooruit(int v)    {set_servos(   v+correctieL,    v+correctieR); }
- void achteruit()       {set_servos(-100, -100); }
- void achteruit(int v)  {set_servos(  -(v+correctieL),  -(v+correctieR)); }
- void links()           {set_servos(   0,  100); }
- void links(int v)      {set_servos(   0,    (v+correctieR)); }
- void rechts()          {set_servos( 100,    0); }
- void rechts(int v)     {set_servos(   (v+correctieL),    0); }
- void stopauto()        {set_servos(   0,    0); }
- void linkshard()       {set_servos(-100,  100); }
- void linkshard(int v)  {set_servos(  -(v+correctieL),    (v+correctieR)); }
- void rechtshard()      {set_servos( 100, -100); }
- void rechtshard(int v) {set_servos(   (v+correctieL),   -(v+correctieR)); }
 
 int readQLDigital(int pin){
   //Returns value from the QRE1113 Digital Polulu

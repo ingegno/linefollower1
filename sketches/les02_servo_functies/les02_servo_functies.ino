@@ -23,19 +23,12 @@ void setup()
   servo2.attach(10);  // connecteer servo op pin 10 
   
   set_servos(servL, servR);
-  
   dotime();
 }
 
-
-void loop() 
-{ // we tonen hoe zonder blokkeren via delay we vlot 
-  // kunnen rijden
-  // dit is nodig als we terwijl we rijden we willen kunnen
-  // zoeken naar objecten of een lijn volgen
-  
+void loop()
+{
   dotime();
-  
   //voorgedefinieerde weg afleggen in seconden
   if      (timesec < 5) vooruit();
   else if (timesec < 10) achteruit();
@@ -46,24 +39,23 @@ void loop()
     //herbegin
     resettime();
   }
-  
 }
-
-/* Opslaan van de tijd
+/* handige korte functies voor typische beweging
  */
-void dotime()
-{
-  timemilli = millis()-timemillibegin;
-  timemicro = micros()-timemicrobegin;
-  timesec = timemilli/1000;
-}
-void resettime()
-{
-    timemillibegin = timemilli;
-    timemicrobegin = timemicro;
-    timemilli = 0UL; timemicro=0UL; timesec=0UL;
-}
-
+ void vooruit()        {set_servos( 100,  100); }
+ void vooruit(int v)   {set_servos(   v,    v); }
+ void achteruit()      {set_servos(-100, -100); }
+ void achteruit(int v) {set_servos(  -v,   -v); }
+ void links()          {set_servos(   0,  100); }
+ void links(int v)     {set_servos(   0,    v); }
+ void rechts()         {set_servos( 100,    0); }
+ void rechts(int v)    {set_servos(   v,    0); }
+ void linkshard()      {set_servos(-100,  100); }
+ void linkshard(int v) {set_servos(  -v,    v); }
+ void rechtshard()     {set_servos( 100, -100); }
+ void rechtshard(int v){set_servos(   v,   -v); }
+ void stopauto()       {set_servos(   0,    0); }
+ 
 /* De servo's snelheden geven in percent van de
    maximale snelheid.
  */ 
@@ -85,12 +77,18 @@ void set_servos(int links, int rechts)
     servR = rechts;
   }
 }
-
-/* handige korte functies voor typische beweging
+/* Opslaan van de tijd
  */
- void vooruit()    {set_servos( 100,  100); }
- void achteruit()  {set_servos(-100, -100); }
- void links()      {set_servos(   0,  100); }
- void rechts()     {set_servos( 100,    0); }
- void stopauto()   {set_servos(   0,    0); }
- 
+void dotime()
+{
+  timemilli = millis()-timemillibegin;
+  timemicro = micros()-timemicrobegin;
+  timesec = timemilli/1000;
+}
+void resettime()
+{
+    timemillibegin = timemilli;
+    timemicrobegin = timemicro;
+    timemilli = 0UL; timemicro=0UL; timesec=0UL;
+}
+

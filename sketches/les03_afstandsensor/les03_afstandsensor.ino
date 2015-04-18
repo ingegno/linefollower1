@@ -29,11 +29,7 @@ void setup() {
 }
 
 void loop() {
-  if (gebruik_simple) {
-    afstand = meas_afst_simpel();
-  } else {
-    afstand = meas_afst_timeout(MAX_AFSTAND);
-  }
+ afstand = meas_afst_simpel();
   if (afstand > 0) {
     Serial.print("Blik op "); Serial.print(afstand); Serial.println(" cm"); 
   } else {

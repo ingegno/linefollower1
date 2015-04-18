@@ -30,7 +30,7 @@ unsigned long timemicro, timemicrobegin=0UL;
 //maximum afstand in cm die we willen zien
 #define MAX_AFSTAND 50.
 //minimum afstand die sensor kan zien in cm
-#define MIN_AFSTAND 3.5
+#define MIN_AFSTAND 6
 //variabelen om mee te rekenen
 float afstand=0;
 

@@ -6,7 +6,7 @@
 // alles rond lijnsensor
 // pas volgende aan voor aantal sensoren die je hebt. 
 // Hier voor twee sensoren, een links en een rechts
-#define ANALOGSENS true
+#define ANALOGSENS  false
 #define lijnLpin  2  // digital pin normaal, analog A2 als ANALOGSENS==true
 #define lijnRpin  3  // digital pin normaal, analog A3 als ANALOGSENS==true
 #define nrlijnpin 2
